@@ -9,6 +9,7 @@ async def hello():
 @app.websocket('/ws')
 async def ws():
     while True:
-        await websocket.send('hello')
+        data = await websocket.receive()
+        await websocket.send(f"echo {data}")
 
 app.run()
