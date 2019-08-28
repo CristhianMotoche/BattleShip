@@ -1,58 +1,79 @@
+port module Main exposing (main)
+
 import Browser
-import Html exposing (Html, div)
-import PortFunnels exposing (State)
+import Html exposing (Html)
+import Html as H
+import Html.Attributes as HA
+import Html.Events as HE
+import Json.Encode as JE
 
+import BattleField.Index.View as IndexView
 
--- Main
-main =
-    Browser.element
-        { init = init
-        , update = update
-        , view = view
-        , subscriptions = subscriptions
-      }
+-- JavaScript usage: app.ports.websocketIn.send(response);
+port websocketIn : (String -> msg) -> Sub msg
+-- JavaScript usage: app.ports.websocketOut.subscribe(handler);
+port websocketOut : String -> Cmd msg
 
--- Init
-init : () -> (Model, Cmd Msg)
-init _ =
-    { send = "Hello World!"
-    , url = defaultUrl
-    , state = PortFunnels.initialState
-    , error = Nothing
-    } |> withNoCmd
-
-
--- Model
-type alias Model =
-    { send : String
-    , url : String
-    , state : State
-    , error : Maybe String
+main = Browser.element
+    { init = init
+    , update = update
+    , view = view
+    , subscriptions = subscriptions
     }
 
+{- MODEL -}
 
-type Msg = Send
+type alias Model =
+    { responses : List String
+    , input : String
+    }
 
+init : () -> (Model, Cmd Msg)
+init _ =
+    ( { responses = []
+      , input = ""
+      }
+    , Cmd.none
+    )
 
--- Update
-update : Msg -> Model -> ( Model, Cmd Msg )
+{- UPDATE -}
+
+type Msg = Change String
+    | Submit String
+    | WebsocketIn String
+
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Send -> model |> withNoCmd
+    Change input ->
+      ( { model | input = input }
+      , Cmd.none
+      )
+    Submit value ->
+      ( model
+      , websocketOut value
+      )
+    WebsocketIn value ->
+      ( { model | responses = value :: model.responses }
+      , Cmd.none
+      )
 
+{- SUBSCRIPTIONS -}
 
-
--- Subsc
 subscriptions : Model -> Sub Msg
-subscriptions =
-    PortFunnels.subscriptions Process
+subscriptions model =
+    websocketIn WebsocketIn
 
--- View
+{- VIEW -}
+
+li : String -> Html Msg
+li string = Html.li [] [Html.text string]
+
 view : Model -> Html Msg
-view model = div []
-
-
---- Websocket
-defaultUrl : String
-defaultUrl =
-  "wss://echo.websocket.org"
+view model =
+  H.div
+    []
+    [ H.div [] [H.h1 [] [H.text "BattleField"]],
+      H.div [] [H.button [HE.onClick (Submit "asd")] [H.text "BattleField"]]
+    ]
+    --[ Html.form [HE.onSubmit (WebsocketIn model.input)] -- Short circuit to test without ports

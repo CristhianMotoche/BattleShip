@@ -10,6 +10,7 @@ async def hello():
 async def ws():
     while True:
         data = await websocket.receive()
-        await websocket.send(f"echo {data}")
+        print(data)
+        await websocket.send(f"Python: {data}")
 
 app.run()
