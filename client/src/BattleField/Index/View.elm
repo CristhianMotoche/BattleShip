@@ -1,4 +1,4 @@
-module BattleField.Index.View exposing (view)
+module BattleField.Index.View exposing (view, f)
 
 
 import Html exposing (Html)
@@ -6,6 +6,8 @@ import Html as H
 import Html.Attributes as HA
 import Html.Events as HE
 
+f : x -> x
+f x = x
 
 view : some -> Html some
 view some =

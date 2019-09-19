@@ -2,7 +2,7 @@
   pkgs.mkShell {
     buildInputs = [
       pkgs.elmPackages.elm
-      pkgs.nodejs
+      pkgs.nodejs-10_x
     ];
 
     shellHook =
