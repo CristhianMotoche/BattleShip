@@ -8,6 +8,8 @@ license = "WTFPL"
 [tool.poetry.dependencies]
 python = "^3.7"
 Quart = "^0.9.1"
+tortoise-orm = "^0.13.10"
+aiosqlite = "^0.10.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.1"
