@@ -2,7 +2,7 @@ from tortoise.models import Model
 from tortoise import fields
 
 
-class Session(Model):
+class SessionTable(Model):
     __tablename__ = 'sessions'
 
     id = fields.IntField(pk=True)
