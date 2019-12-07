@@ -1,6 +1,6 @@
 from battlefield.session import session
 from ..domain.use_cases.creator import SessionCreator
-from .data_access import SessionDataAccess
+from .data.data_access import SessionDataAccess
 
 
 @session.route('/sessions', methods=['POST'])
