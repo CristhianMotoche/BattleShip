@@ -3,6 +3,7 @@ class SessionPresenter:
         self._session = session
 
     def to_dict(self):
-        return {'id': self._session.id
-                'key': self._session.key
-               }
+        return {
+            'id': self._session.id,
+            'key': self._session.key,
+        }

@@ -12,5 +12,5 @@ class TestDataToDomain(TestCase):
         instance_session = DataToDomain(from_).map()
 
         assert isinstance(instance_session, Session)
-        assert instance_session.id == 1
+        assert instance_session.id == None
         assert instance_session.key == '12345678'

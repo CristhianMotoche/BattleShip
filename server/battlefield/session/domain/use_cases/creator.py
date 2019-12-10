@@ -1,4 +1,5 @@
-from random import shuffle
+from random import choice
+from string import ascii_letters
 from ..entities import Session
 from ..repository import SessionRepository
 
@@ -11,9 +12,9 @@ class SessionCreator:
 
     def create(self):
         key = self.__gen_key()
-        session = Session(key=key)
+        session = Session(id=None, key=key)
         self._saver.save(session)
         return session
 
     def __gen_key(self):
-        return shuffle(string.ascii_letters)[:self.MAX_SIZE]
+        return ''.join(choice(ascii_letters) for i in range(self.MAX_SIZE))
