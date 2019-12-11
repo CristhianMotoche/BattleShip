@@ -1,7 +1,33 @@
 # Battlefield
 ## Client
 ### Requirements
-- Elm
+- Elm 0.19.1 (hint: install from [here][elm])
+- Node v12.13.1 (hint: use [asdf])
+
+### Set up
+
+Install dependencies with `npm`:
+
+```
+npm install
+```
+
+### Run reactor
+
+Run the `elm` reactor with:
+
+```
+elm reactor
+```
+
+### Run tests
+
+Run the tests with:
+
+```
+npm run test
+```
+
 
 ### TODO:
 - [ ] Fix Nix dinamyc library not setting the interpreter correctly:
@@ -35,7 +61,16 @@ Run the application with:
 poetry run app.py
 ```
 
+### Run tests
+
+Run the tests with:
+
+```
+poetry run pytest
+```
+
 
 [asdf]: https://github.com/asdf-vm/asdf
 [poetry]: https://poetry.eustace.io/
 [sqlite]: https://sqlite.org/index.html
+[elm]: https://guide.elm-lang.org/install/elm.html

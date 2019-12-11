@@ -74,6 +74,7 @@ view model =
   H.div
     []
     [ H.div [] [H.h1 [] [H.text "BattleField"]],
-      H.div [] [H.button [HE.onClick (Submit "asd")] [H.text "BattleField"]]
+      H.div [] [H.button [HE.onClick (Submit "asd")] [H.text "Play"]],
+      H.div [] [H.button [HE.onClick (Submit "asd")] [H.text "Scores"]]
     ]
     --[ Html.form [HE.onSubmit (WebsocketIn model.input)] -- Short circuit to test without ports
