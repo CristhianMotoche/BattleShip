@@ -15,4 +15,27 @@ patchelf --set-interpreter \
 
 ## Server
 ### Requirements
-- Python
+
+- Python 3.7.5 (tip: install it with [asdf])
+- SQLite 3.28.0 (website [here][sqlite])
+
+### Set up
+
+Install dependencies with [poetry]:
+
+```
+poetry install
+```
+
+### Start up
+
+Run the application with:
+
+```
+poetry run app.py
+```
+
+
+[asdf]: https://github.com/asdf-vm/asdf
+[poetry]: https://poetry.eustace.io/
+[sqlite]: https://sqlite.org/index.html
