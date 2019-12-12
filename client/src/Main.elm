@@ -14,7 +14,7 @@ port websocketIn : (String -> msg) -> Sub msg
 -- JavaScript usage: app.ports.websocketOut.subscribe(handler);
 port websocketOut : String -> Cmd msg
 
-main = Browser.element
+main = Browser.document
     { init = init
     , update = update
     , view = view
@@ -69,8 +69,14 @@ subscriptions model =
 li : String -> Html Msg
 li string = Html.li [] [Html.text string]
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
+  { title = "Title"
+  , body = [elemView model]
+  }
+
+elemView : Model -> Html Msg
+elemView model =
   H.div
     []
     [ H.div [] [H.h1 [] [H.text "BattleField"]],
