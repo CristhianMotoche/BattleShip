@@ -4,20 +4,23 @@
 - Elm 0.19.1 (hint: install from [here][elm])
 - Node v12.13.1 (hint: use [asdf])
 
-### Set up
 
-Install dependencies with `npm`:
+### Set up dependencies
+
+Install the dependencies with `npm`:
+
 
 ```
 npm install
 ```
 
-### Run reactor
 
-Run the `elm` reactor with:
+### Run parcel
+
+Run `parcel` to load the code with hot reloading:
 
 ```
-elm reactor
+npm run start
 ```
 
 ### Run tests
@@ -27,7 +30,6 @@ Run the tests with:
 ```
 npm run test
 ```
-
 
 ### TODO:
 - [ ] Fix Nix dinamyc library not setting the interpreter correctly:
