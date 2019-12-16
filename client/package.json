@@ -7,11 +7,14 @@
     "test": "tests"
   },
   "scripts": {
+    "start": "parcel index.html",
     "test": "elm-test"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "elm-test": "^0.19.1"
+    "elm-hot": "^1.1.4",
+    "elm-test": "^0.19.1",
+    "parcel-bundler": "^1.12.4"
   }
 }
