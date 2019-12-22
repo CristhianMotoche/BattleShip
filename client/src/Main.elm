@@ -1,11 +1,13 @@
 port module Main exposing (main)
 
 import Browser
+import Browser.Navigation as Nav
 import Html exposing (Html)
 import Html as H
 import Html.Attributes as HA
 import Html.Events as HE
 import Json.Encode as JE
+import Url
 
 import BattleField.Index.View as IndexView
 
@@ -14,11 +16,14 @@ port websocketIn : (String -> msg) -> Sub msg
 -- JavaScript usage: app.ports.websocketOut.subscribe(handler);
 port websocketOut : String -> Cmd msg
 
-main = Browser.document
+
+main = Browser.application
     { init = init
     , update = update
     , view = view
     , subscriptions = subscriptions
+    , onUrlChange = URLChange
+    , onUrlRequest = URLRequest
     }
 
 {- MODEL -}
@@ -28,8 +33,8 @@ type alias Model =
     , input : String
     }
 
-init : () -> (Model, Cmd Msg)
-init _ =
+init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
+init _ _ _ =
     ( { responses = []
       , input = ""
       }
@@ -38,9 +43,12 @@ init _ =
 
 {- UPDATE -}
 
-type Msg = Change String
+type Msg =
+      Change String
     | Submit String
     | WebsocketIn String
+    | URLChange Url.Url
+    | URLRequest Browser.UrlRequest
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -57,6 +65,8 @@ update msg model =
       ( { model | responses = value :: model.responses }
       , Cmd.none
       )
+    URLChange url -> (model, Cmd.none)
+    URLRequest url -> (model, Cmd.none)
 
 {- SUBSCRIPTIONS -}
 
