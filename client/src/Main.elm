@@ -9,7 +9,7 @@ import Html.Events as HE
 import Json.Encode as JE
 import Url
 
-import BattleField.Index.View as IndexView
+import BattleField.Index as Index
 
 -- JavaScript usage: app.ports.websocketIn.send(response);
 port websocketIn : (String -> msg) -> Sub msg
@@ -21,76 +21,45 @@ main = Browser.application
     { init = init
     , update = update
     , view = view
-    , subscriptions = subscriptions
+    , subscriptions = \_ -> Sub.none
     , onUrlChange = URLChange
     , onUrlRequest = URLRequest
     }
 
 {- MODEL -}
 
-type alias Model =
-    { responses : List String
-    , input : String
-    }
+type Model = Index Index.Model
 
 init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 init _ _ _ =
-    ( { responses = []
-      , input = ""
-      }
+    ( Index ()
     , Cmd.none
     )
 
 {- UPDATE -}
 
 type Msg =
-      Change String
-    | Submit String
-    | WebsocketIn String
+      IndexMsg Index.Msg
     | URLChange Url.Url
     | URLRequest Browser.UrlRequest
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
-    Change input ->
-      ( { model | input = input }
-      , Cmd.none
-      )
-    Submit value ->
-      ( model
-      , websocketOut value
-      )
-    WebsocketIn value ->
-      ( { model | responses = value :: model.responses }
-      , Cmd.none
-      )
-    URLChange url -> (model, Cmd.none)
-    URLRequest url -> (model, Cmd.none)
-
-{- SUBSCRIPTIONS -}
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    websocketIn WebsocketIn
+  case (msg, model) of
+    (IndexMsg msgIndex, Index indexModel) ->
+        let
+            (newIndexModel, newIndexCmd) = Index.update msgIndex indexModel
+        in
+           (Index newIndexModel, Cmd.none)
+    (URLChange url, _) -> (model, Cmd.none)
+    (URLRequest url, _) -> (model, Cmd.none)
 
 {- VIEW -}
 
-li : String -> Html Msg
-li string = Html.li [] [Html.text string]
-
 view : Model -> Browser.Document Msg
 view model =
-  { title = "Title"
-  , body = [elemView model]
-  }
-
-elemView : Model -> Html Msg
-elemView model =
-  H.div
-    []
-    [ H.div [] [H.h1 [] [H.text "BattleField"]],
-      H.div [] [H.button [HE.onClick (Submit "asd")] [H.text "Play"]],
-      H.div [] [H.button [HE.onClick (Submit "asd")] [H.text "Scores"]]
-    ]
-    --[ Html.form [HE.onSubmit (WebsocketIn model.input)] -- Short circuit to test without ports
+  case model of
+    Index modelIndex ->
+      { title = "Title"
+      , body = [H.map IndexMsg (Index.view modelIndex)]
+      }
