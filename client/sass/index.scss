@@ -1,0 +1,18 @@
+.index {
+  display: grid;
+  grid-template-rows: 10% auto 10%;
+  grid-template-columns: 100%;
+  text-align: center;
+
+  &__title {
+    font-size: 2rem;
+  }
+
+  &__play {
+
+  }
+
+  &__score {
+
+  }
+}
