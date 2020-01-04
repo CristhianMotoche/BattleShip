@@ -37,8 +37,14 @@ view : Model -> H.Html Msg
 view _ =
   H.div
     [ HA.class "index" ]
-    [ H.div [ HA.class "index__title" ] [H.h1 [] [H.text "BattleField"]],
-      H.div [ HA.class "index__play" ] [H.a [HA.href (R.toString R.Sessions)] [H.text "Play"]],
-      H.div [ HA.class "index__scores" ] [H.button [HE.onClick Scores] [H.text "Scores"]]
+    [ H.div [ HA.class "index__title" ]
+            [ H.h1 []
+                   [H.text "BattleField"]],
+      H.div [ HA.class "index__play" ]
+            [ H.a [ HA.href (R.toString R.Sessions) ]
+                  [ H.text "Play" ]],
+      H.div [ HA.class "index__scores" ]
+            [H.button [HE.onClick Scores]
+                      [H.text "Scores"]]
     ]
     --[ Html.form [HE.onSubmit (WebsocketIn model.input)] -- Short circuit to test without ports
