@@ -1,21 +1,18 @@
-port module Main exposing (main)
+module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
 import Html as H
 import Html.Attributes as HA
-import Html.Events as HE
-import Json.Encode as JE
 import Url
 
 import BattleField.Index as Index
-import BattleField.Route exposing (Route)
 import BattleField.Route as Route
 
 -- JavaScript usage: app.ports.websocketIn.send(response);
-port websocketIn : (String -> msg) -> Sub msg
+-- port websocketIn : (String -> msg) -> Sub msg
 -- JavaScript usage: app.ports.websocketOut.subscribe(handler);
-port websocketOut : String -> Cmd msg
+-- port websocketOut : String -> Cmd msg
 
 
 main : Program () Model Msg
@@ -36,10 +33,8 @@ type Model =
   | Index Index.Model
 
 init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
-init _ _ key =
-    ( Index (Index.init key)
-    , Cmd.none
-    )
+init _ url key =
+  changeRouteTo (Route.fromUrl url) (Redirect key)
 
 {- UPDATE -}
 
@@ -72,15 +67,17 @@ update msg model =
     (_, _) -> (model, Cmd.none)
 
 
-changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
+changeRouteTo : Maybe Route.Route -> Model -> ( Model, Cmd Msg )
 changeRouteTo maybeRoute model =
-  case maybeRoute of
-    Nothing ->
-      (NotFound (getKey model), Cmd.none)
-    Just Route.Index ->
-      (Index (Index.init (getKey model)), Cmd.none)
-    Just Route.Sessions ->
-      (model, Cmd.none)
+  let key = getKey model
+  in
+    case maybeRoute of
+      Nothing ->
+        (NotFound key, Cmd.none)
+      Just Route.Index ->
+        (Index (Index.init key), Cmd.none)
+      Just Route.Sessions ->
+        (model, Cmd.none)
 
 
 getKey : Model -> Nav.Key

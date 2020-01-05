@@ -3,7 +3,6 @@ module BattleField.Index exposing (Model, Msg, init, view, update, getKey)
 
 import Html as H
 import Html.Attributes as HA
-import Html.Events as HE
 import Browser.Navigation as Nav
 
 import BattleField.Route as R
@@ -22,7 +21,7 @@ init key =
   , key = key
   }
 
-type Msg = Scores
+type alias Msg = ()
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -41,10 +40,9 @@ view _ =
             [ H.h1 []
                    [H.text "BattleField"]],
       H.div [ HA.class "index__play" ]
-            [ H.a [ HA.href (R.toString R.Sessions) ]
-                  [ H.text "Play" ]],
-      H.div [ HA.class "index__scores" ]
-            [H.button [HE.onClick Scores]
-                      [H.text "Scores"]]
+            [ H.a [ HA.href (R.toString R.Sessions), HA.class "button" ]
+                  [ H.text "Play" ]
+            , H.a [ HA.href "somewhere", HA.class "button" ]
+                  [ H.text "Scores"]]
     ]
     --[ Html.form [HE.onSubmit (WebsocketIn model.input)] -- Short circuit to test without ports
