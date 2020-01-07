@@ -24,5 +24,5 @@ routeParser =
 toString : Route -> String
 toString route =
   case route of
-    Index -> "/index"
+    Index -> "/"
     Sessions -> "/session"

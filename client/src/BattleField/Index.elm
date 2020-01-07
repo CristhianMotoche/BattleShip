@@ -45,4 +45,3 @@ view _ =
             , H.a [ HA.href "somewhere", HA.class "button" ]
                   [ H.text "Scores"]]
     ]
-    --[ Html.form [HE.onSubmit (WebsocketIn model.input)] -- Short circuit to test without ports
