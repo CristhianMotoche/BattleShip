@@ -1,8 +1,9 @@
-module BattleField.Session exposing (Model, Msg, init, view)
+module BattleField.Session exposing (Model, Msg, init, view, getKey, update)
 
 
 import Html as H
 import Html.Attributes as HA
+import Browser.Navigation as Nav
 
 
 type alias Session =
@@ -12,7 +13,10 @@ type alias Session =
 
 
 type alias Model =
-  { sessions : List Session }
+  { sessions : List Session
+  , key : Nav.Key
+  , title : Maybe String
+  }
 
 
 type Msg =
@@ -20,11 +24,15 @@ type Msg =
   | Loaded (List Session)
 
 
-init : Model
-init = {
+init : Nav.Key -> Model
+init key = {
     sessions = []
+  , key = key
+  , title = Just "Sessions"
   }
 
+update : Msg -> Model -> (Model, Cmd Msg)
+update _ model = (model, Cmd.none)
 
 view : Model -> H.Html Msg
 view model =
@@ -38,3 +46,7 @@ viewSession session =
         [ H.text (String.fromInt session.id)
         , H.text session.name
         ]
+
+
+getKey : Model -> Nav.Key
+getKey model = model.key

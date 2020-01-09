@@ -7,6 +7,7 @@ import Html.Attributes as HA
 import Url
 
 import BattleField.Index as Index
+import BattleField.Session as Session
 import BattleField.Route as Route
 
 -- JavaScript usage: app.ports.websocketIn.send(response);
@@ -31,6 +32,7 @@ type Model =
   Redirect Nav.Key
   | NotFound Nav.Key
   | Index Index.Model
+  | Sessions Session.Model
 
 init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 init _ url key =
@@ -40,6 +42,7 @@ init _ url key =
 
 type Msg =
       IndexMsg Index.Msg
+    | SessionMsg Session.Msg
     | URLChange Url.Url
     | URLRequest Browser.UrlRequest
     | None ()
@@ -52,6 +55,12 @@ update msg model =
             (newIndexModel, _) = Index.update msgIndex indexModel
         in
            (Index newIndexModel, Cmd.none)
+
+    (SessionMsg msgSession, Sessions sessionModel) ->
+        let
+            (newModel, _) = Session.update msgSession sessionModel
+        in
+           (Sessions newModel, Cmd.none)
 
     (URLChange urlChanged, _) ->
       changeRouteTo (Route.fromUrl urlChanged) model
@@ -77,7 +86,7 @@ changeRouteTo maybeRoute model =
       Just Route.Index ->
         (Index (Index.init key), Cmd.none)
       Just Route.Sessions ->
-        (model, Cmd.none)
+        (Sessions (Session.init key), Cmd.none)
 
 
 getKey : Model -> Nav.Key
@@ -86,6 +95,7 @@ getKey model =
     Redirect key -> key
     NotFound key -> key
     Index indexModel -> Index.getKey indexModel
+    Sessions sesionModel -> Session.getKey sesionModel
 
 
 {- VIEW -}
@@ -104,6 +114,8 @@ view model =
     case model of
       Index modelIndex ->
         viewPage IndexMsg (Index.view modelIndex) modelIndex.title
+      Sessions modelSession ->
+        viewPage SessionMsg (Session.view modelSession) modelSession.title
       Redirect _ -> viewPage None (H.div [][ H.text "Loading.."]) (Just "Redirecting...")
       NotFound _ -> viewPage None (H.div [][ H.text "Not found :("]) (Just "Not Found")
 
