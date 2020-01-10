@@ -86,7 +86,9 @@ changeRouteTo maybeRoute model =
       Just Route.Index ->
         (Index (Index.init key), Cmd.none)
       Just Route.Sessions ->
-        (Sessions (Session.init key), Cmd.none)
+        let (x, sessions) = (Session.init key)
+        in
+          (Sessions x, Cmd.map SessionMsg sessions)
 
 
 getKey : Model -> Nav.Key
