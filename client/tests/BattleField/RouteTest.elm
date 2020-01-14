@@ -9,7 +9,15 @@ import Url exposing (Url, Protocol(..))
 
 routeFuzzer : Fuzzer Route
 routeFuzzer =
-  oneOf [ constant Index, constant Sessions ]
+  List.map fuzzRoute [Index, Sessions]
+  |> oneOf
+
+
+fuzzRoute : Route -> Fuzzer Route
+fuzzRoute value =
+  case value of
+    Sessions -> constant Sessions
+    Index -> constant Index
 
 
 formatUrl : String -> Url
