@@ -8,4 +8,6 @@ jobs:
       - checkout:
           path: ~/project
       - run: npm install
+      - run: npm install elm@latest-0.19.1
+      - run: echo "export PATH=$PWD/node_modules/.bin:$PATH" >> $BASH_ENV
       - run: npm run test
