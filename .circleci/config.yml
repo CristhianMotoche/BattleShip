@@ -1,0 +1,10 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:12.13.1
+    working_directory: ~/client/
+    steps:
+      - checkout
+      - npm install
+      - npm run test
