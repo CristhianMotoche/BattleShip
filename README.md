@@ -1,4 +1,4 @@
-# Battlefield
+# BattleShip
 ## Client
 ### Requirements
 - Elm 0.19.1 (hint: install from [here][elm])
