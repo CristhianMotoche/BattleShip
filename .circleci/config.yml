@@ -3,8 +3,9 @@ jobs:
   build:
     docker:
       - image: circleci/node:12.13.1
-    working_directory: ~/client/
+    working_directory: ~/project/client
     steps:
-      - checkout
+      - checkout:
+          path: ~/project
       - run: npm install
       - run: npm run test
