@@ -6,5 +6,5 @@ jobs:
     working_directory: ~/client/
     steps:
       - checkout
-      - npm install
-      - npm run test
+      - run: npm install
+      - run: npm run test
