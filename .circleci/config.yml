@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  frontend:
     docker:
       - image: circleci/node:12.13.1
     working_directory: ~/project/client
@@ -11,3 +11,21 @@ jobs:
       - run: npm install elm@latest-0.19.1
       - run: echo "export PATH=$PWD/node_modules/.bin:$PATH" >> $BASH_ENV
       - run: npm run test
+
+  backend:
+    docker:
+      - image: inspirehep/poetry:0.12.17
+    working_directory: ~/project/server
+    steps:
+      - checkout:
+          path: ~/project
+      - run: poetry install
+      - run: poetry run pytest
+
+
+workflows:
+  version: 2
+  build-app:
+    jobs:
+      - frontend
+      - backend
