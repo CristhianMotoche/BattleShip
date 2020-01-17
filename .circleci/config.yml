@@ -14,11 +14,13 @@ jobs:
 
   backend:
     docker:
-      - image: inspirehep/poetry:0.12.17
+      - image: circleci/python:3.7.5
     working_directory: ~/project/server
     steps:
       - checkout:
           path: ~/project
+      - run: pip install --user poetry
+      - run: echo "export PATH=$HOME/.local/bin/:$PATH" >> $BASH_ENV
       - run: poetry install
       - run: poetry run pytest
 
