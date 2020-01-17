@@ -1,4 +1,7 @@
 # BattleShip
+
+[![CircleCI](https://circleci.com/gh/CristhianMotoche/BattleShip.svg?style=svg)](https://circleci.com/gh/CristhianMotoche/BattleShip)
+
 ## Client
 ### Requirements
 - Elm 0.19.1 (hint: install from [here][elm])
