@@ -1,9 +1,10 @@
-from quart import Quart, websocket
+from quart import websocket
+from quart_openapi import Pint
 from battlefield.utils import init
 
 
 def create_app(config):
-    app = Quart(__name__)
+    app = Pint(__name__, title='BattleShip')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/gino'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 

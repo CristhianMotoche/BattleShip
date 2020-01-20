@@ -11,6 +11,7 @@ Quart = "^0.9.1"
 tortoise-orm = "^0.13.10"
 aiosqlite = "^0.10.0"
 object-mapper = "^1.1"
+quart-openapi = "^1.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.1"
