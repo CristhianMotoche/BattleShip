@@ -1,6 +1,7 @@
 from quart import websocket
-from quart_openapi import Pint
+from quart_openapi import Pint, OpenApiView
 from battlefield.utils import init
+import json
 
 
 def create_app(config):
@@ -20,5 +21,9 @@ def create_app(config):
 
     from battlefield.session import session as session_bp
     app.register_blueprint(session_bp)
+
+    @app.cli.command()
+    def openapi():
+        print(json.dumps(app.__schema__, indent=4, sort_keys=False))
 
     return app
