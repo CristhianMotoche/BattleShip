@@ -23,7 +23,14 @@ jobs:
       - run: echo "export PATH=$HOME/.local/bin/:$PATH" >> $BASH_ENV
       - run: poetry install
       - run: poetry run pytest
-      - run: QUART_APP='app' poetry run quart openapi
+      - run: |
+          export CURRENT=$(cat ../api.json | cksum)
+          export REAL=$(QUART_APP='app' poetry run quart openapi | cksum)
+          if [ "$CURRENT" == "$REAL" ]; then
+            echo 'API has not changed!'
+          else
+            echo 'UPDATE the API!!' || false
+          fi
 
 
 workflows:
