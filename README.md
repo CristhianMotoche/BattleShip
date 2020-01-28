@@ -6,6 +6,7 @@
 ### Requirements
 - Elm 0.19.1 (hint: install from [here][elm])
 - Node v12.13.1 (hint: use [asdf])
+- Docker
 
 
 ### Set up dependencies
@@ -15,6 +16,14 @@ Install the dependencies with `npm`:
 
 ```
 npm install
+```
+
+Generate the API client based on the open api definition in the root folder:
+
+```
+docker run -v ${PWD}:/tmp \
+  openapitools/openapi-generator-cli generate \
+  -i /tmp/api.json -g elm -o /tmp/client/generated/
 ```
 
 
