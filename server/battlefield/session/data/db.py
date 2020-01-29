@@ -11,4 +11,4 @@ class SessionTable(Model):
 
     @classmethod
     def something(cls):
-        cls.query.get(key > 10)
+        cls.query.get(cls.key > 10)

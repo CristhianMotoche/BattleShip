@@ -1,5 +1,4 @@
 from battlefield.session.domain.entities import Session
-from battlefield.session.data.db import SessionTable
 
 
 class DataToDomain:

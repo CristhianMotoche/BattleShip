@@ -23,6 +23,7 @@ jobs:
       - run: echo "export PATH=$HOME/.local/bin/:$PATH" >> $BASH_ENV
       - run: poetry install
       - run: poetry run pytest
+      - run: poetry run flake8
       - run: |
           export CURRENT=$(cat ../api.json | cksum)
           export REAL=$(QUART_APP='app' poetry run quart openapi | cksum)

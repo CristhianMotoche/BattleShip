@@ -1,8 +1,9 @@
-from quart import jsonify
-from battlefield.session import session
+from quart import Blueprint, jsonify
 from ..domain.use_cases.creator import SessionCreator
 from .data_access import SessionDataAccess
 from .presenters import SessionPresenter
+
+session = Blueprint('session', __name__)
 
 
 @session.route('/sessions', methods=['POST'])
@@ -21,4 +22,3 @@ def lists():
 @session.route('/sessions/<string:session_id>', methods=['GET'])
 def get(session_id):
     return 'LOL: %s' % session_id
-

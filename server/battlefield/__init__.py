@@ -1,5 +1,5 @@
 from quart import websocket
-from quart_openapi import Pint, OpenApiView
+from quart_openapi import Pint
 from battlefield.utils import init
 import json
 
