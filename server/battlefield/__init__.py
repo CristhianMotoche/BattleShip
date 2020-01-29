@@ -19,7 +19,7 @@ def create_app(config):
             data = await websocket.receive()
             await websocket.send("START: %s" % data)
 
-    from battlefield.session import session as session_bp
+    from battlefield.session.data.api import session as session_bp
     app.register_blueprint(session_bp)
 
     @app.cli.command()
