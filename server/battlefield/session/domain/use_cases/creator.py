@@ -10,10 +10,10 @@ class SessionCreator:
     def __init__(self, saver: SessionRepository):
         self._saver = saver
 
-    def create(self):
+    async def create(self):
         key = self.__gen_key()
         session = Session(id=None, key=key)
-        self._saver.save(session)
+        await self._saver.save(session)
         return session
 
     def __gen_key(self):

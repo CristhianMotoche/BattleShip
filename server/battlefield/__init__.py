@@ -1,6 +1,6 @@
-from quart import websocket
 from quart_openapi import Pint
 from battlefield.utils import init
+
 import json
 
 
@@ -13,14 +13,10 @@ def create_app(config):
     async def init_orm():
         await init()
 
-    @app.websocket('/ws')
-    async def ws():
-        while True:
-            data = await websocket.receive()
-            await websocket.send("START: %s" % data)
-
-    from battlefield.session.data.api import session as session_bp
-    app.register_blueprint(session_bp)
+    from battlefield.session.data.api import Session
+    app.add_url_rule("/sessions", view_func=Session.as_view("SessionIndex"))
+    app.add_url_rule("/sessions/<int:session_id>",
+                     view_func=Session.as_view("SessionSingle"))
 
     @app.cli.command()
     def openapi():
