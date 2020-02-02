@@ -360,6 +360,26 @@ version = "0.10.0"
 pytest = ">=3.0.6"
 
 [[package]]
+category = "dev"
+description = "A py.test plugin that parses environment files before running tests"
+name = "pytest-dotenv"
+optional = false
+python-versions = "*"
+version = "0.4.0"
+
+[package.dependencies]
+pytest = ">=2.6.0"
+python-dotenv = ">=0.9.1"
+
+[[package]]
+category = "dev"
+description = "Add .env support to your django/flask apps in development and deployments"
+name = "python-dotenv"
+optional = false
+python-versions = "*"
+version = "0.10.5"
+
+[[package]]
 category = "main"
 description = "World timezone definitions, modern and historical"
 name = "pytz"
@@ -499,7 +519,7 @@ version = "4.6.0"
 setuptools = "*"
 
 [metadata]
-content-hash = "8375b2e888272f006e374541e68c87489ef0070e412a142c53e1026bd2c2e07f"
+content-hash = "0d887ac1b59b9c92481a5a432c1ed323cd240c89467684d127645fc5f886663d"
 python-versions = "^3.7"
 
 [metadata.hashes]
@@ -539,6 +559,8 @@ pypika = ["e7a1d1055b8ca85f22642170bcd399b1120a70f3185e802faf233a15b284a56b"]
 pyrsistent = ["cdc7b5e3ed77bed61270a47d35434a30617b9becdf2478af76ad2c6ade307280"]
 pytest = ["95d13143cc14174ca1a01ec68e84d76ba5d9d493ac02716fd9706c949a505210", "b78fe2881323bd44fd9bd76e5317173d4316577e7b1cddebae9136a4495ec865"]
 pytest-asyncio = ["9fac5100fd716cbecf6ef89233e8590a4ad61d729d1732e0a96b84182df1daaf", "d734718e25cfc32d2bf78d346e99d33724deeba774cc4afdf491530c6184b63b"]
+pytest-dotenv = ["12ff70de238cdc2c8d838ef92b720325ceb6ae2c9967be5f4e606a36de48345c", "a3a0adf9e17cf7c9e38ec597a74cc902ac76baa1cc5a9bd7581a3711930ad057"]
+python-dotenv = ["440c7c23d53b7d352f9c94d6f70860242c2f071cf5c029dd661ccb22d64ae42b", "f254bfd0c970d64ccbb6c9ebef3667ab301a71473569c991253a481f1c98dddc"]
 pytz = ["1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d", "b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be"]
 quart = ["3122d7dd3535301d0f4075657b71842bbef9044a3086091e82637eade72c2f2a", "3b3e1207bdecbbae35b9aeef137abcf273768034423df77c9ad1034a105ddde3"]
 quart-openapi = ["06000dd5b3f03bb4894ecd85f34041685ba581a76136a091d93152f68814046c", "37843bdcde221ae2c1419f7d2d13903b2b7798e08b4bcff6fd0412e36d2dc417", "4d1d576e6874e0e949680f457c239f7f33d4f8465fe668c379ca791b999698c8", "c01852f45a96515c3b600ab3e7e00b329b48b959d8e281538f167b111103f43d"]

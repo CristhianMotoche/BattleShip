@@ -16,5 +16,5 @@ class Session(Resource):
 
     async def get(self, session_id=None):
         if session_id:
-            return jsonify('')
+            return jsonify({})
         return jsonify([])

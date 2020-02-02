@@ -1,6 +1,9 @@
 from quart_openapi import Pint
 from battlefield.utils import init
 
+from tortoise import Tortoise
+
+
 import json
 
 
@@ -21,5 +24,9 @@ def create_app(config):
     @app.cli.command()
     def openapi():
         print(json.dumps(app.__schema__, indent=4, sort_keys=False))
+
+    @app.after_serving
+    async def close_orm():
+        await Tortoise.close_connections()
 
     return app

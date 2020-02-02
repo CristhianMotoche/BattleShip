@@ -4,6 +4,8 @@ import pytest
 
 
 @pytest.fixture(name='app')
-def _app():
+async def _app():
     app = create_app('test')
-    return app
+    await app.startup()
+    yield app
+    await app.shutdown()

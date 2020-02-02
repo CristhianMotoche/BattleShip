@@ -22,6 +22,7 @@ jobs:
       - run: pip install --user poetry
       - run: echo "export PATH=$HOME/.local/bin/:$PATH" >> $BASH_ENV
       - run: poetry install
+      - run: cp .env.sample.test .env.sample
       - run: poetry run pytest
       - run: poetry run flake8
       - run: |
