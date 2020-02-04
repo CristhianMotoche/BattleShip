@@ -6,3 +6,6 @@ class SessionDataAccess(SessionRepository):
 
     async def save(self, session):
         await SessionTable(key=session.key).save()
+
+    async def list(self):
+        await SessionTable().get()
