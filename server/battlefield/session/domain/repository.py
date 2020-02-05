@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from .entities import Session
+from typing import List
 
 
 class SessionRepository(ABC):
@@ -9,5 +10,5 @@ class SessionRepository(ABC):
         pass
 
     @abstractmethod
-    def list(self):
+    def list(self) -> List[Session]:
         pass
