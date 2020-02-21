@@ -11,4 +11,4 @@ class SessionDataAccess(SessionRepository):
 
     async def list(self) -> List[Session]:
         sessions_db = await SessionTable.all()
-        return [Session(id=s.id, key=s.key) for s in sessions_db]
+        return map(lambda s: Session(id=s.id, key=s.key), sessions_db)
