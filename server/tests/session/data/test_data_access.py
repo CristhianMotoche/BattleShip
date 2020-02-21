@@ -11,7 +11,7 @@ class TestSessionDataAccess:
 
     async def test_list_returns_an_empty_list_when_no_data(self, app):
         resp = await SessionDataAccess().list()
-        assert list(resp) == []
+        assert not any(True for _ in resp)
 
     async def test_list_returns_two_elemens_inserted(self, app):
         await SessionDataAccess().save(Session(id=1, key='1234'))
@@ -19,4 +19,4 @@ class TestSessionDataAccess:
 
         resp = await SessionDataAccess().list()
 
-        assert len(list(resp)) == 2
+        assert sum(1 for _ in resp) == 2
