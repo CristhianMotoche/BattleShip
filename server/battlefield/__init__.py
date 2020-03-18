@@ -1,5 +1,6 @@
 from quart_openapi import Pint
 from battlefield.utils import init
+from battlefield.utils.json import Encoder
 
 from tortoise import Tortoise
 
@@ -11,6 +12,8 @@ def create_app(config):
     app = Pint(__name__, title='BattleShip')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/gino'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+
+    app.json_encoder = Encoder
 
     @app.before_serving
     async def init_orm():
