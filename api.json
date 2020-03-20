@@ -6,8 +6,73 @@
     },
     "servers": [
         {
-            "url": "http://"
+            "url": "http://localhost:5000"
         }
     ],
-    "paths": {}
+    "paths": {
+        "/sessions": {
+            "get": {
+                "description": "",
+                "tags": [],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_sessions"
+            },
+            "post": {
+                "description": "",
+                "tags": [],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_sessions"
+            }
+        },
+        "/sessions/{id}": {
+            "get": {
+                "description": "",
+                "tags": [],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_session"
+            },
+            "post": {
+                "description": "",
+                "tags": [],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "post_session"
+            }
+        }
+    }
 }

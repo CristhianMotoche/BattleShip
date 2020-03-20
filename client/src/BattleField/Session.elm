@@ -1,11 +1,15 @@
 module BattleField.Session exposing (Model, Msg, init, view, getKey, update)
 
 
+import Result
+import Http
 import Html as H
 import Html.Attributes as HA
 import Browser.Navigation as Nav
 import Task as T
 import Process as P
+
+import Request.Default as R
 
 
 type alias Session =
@@ -27,7 +31,7 @@ type Status =
   | Success (List Session)
 
 
-type Msg = Loaded (List Session)
+type Msg = Loaded (List Session) | Error
 
 
 init : Nav.Key -> (Model, Cmd Msg)
@@ -40,11 +44,23 @@ init key =
   }, loadSessions)
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update (Loaded list) model =
-  ({ model | sessions = list, status = Success list}, Cmd.none)
+update msg model =
+  case msg of
+    Loaded list ->
+      ({ model | sessions = list, status = Success list}, Cmd.none)
+    Error ->
+      ({ model | status = Failure }, Cmd.none)
 
 loadSessions : Cmd Msg
-loadSessions = T.perform (\_ -> Loaded [{ id = 1, name = "LoL" }]) (P.sleep 2000)
+loadSessions = R.getSessions {
+    onSend = handleResp
+  }
+
+handleResp : Result Http.Error () -> Msg
+handleResp resp =
+    case resp of
+      Result.Ok a -> Loaded [{ id = 1, name = "LoL" }]
+      Result.Err _ -> Error
 
 view : Model -> H.Html Msg
 view model =

@@ -83,6 +83,15 @@ Run the tests with:
 poetry run pytest
 ```
 
+### Update api.json
+
+Run the following command from the `server` directory:
+
+```
+QUART_APP="battlefield:create_app('dev')" poetry run quart openapi > ../api.json
+```
+
+
 
 [asdf]: https://github.com/asdf-vm/asdf
 [poetry]: https://poetry.eustace.io/
