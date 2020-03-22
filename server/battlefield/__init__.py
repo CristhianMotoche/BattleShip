@@ -1,4 +1,5 @@
 from quart_openapi import Pint
+from quart_cors import cors
 from battlefield.utils import init
 from battlefield.utils.json import Encoder
 from dotenv import load_dotenv
@@ -13,6 +14,7 @@ def create_app(config):
     load_dotenv(verbose=True)
 
     app = Pint(__name__, title='BattleShip')
+    app = cors(app, allow_origin="*")
     app.json_encoder = Encoder
 
     app.config.from_envvar("CONFIG_FILE")
