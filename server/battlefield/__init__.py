@@ -10,10 +10,25 @@ from tortoise import Tortoise
 import json
 
 
+BASE_MODEL_SCHEMA = {
+    "$schema": "http://json-schema.org/schema#",
+    "$id": "schema.json",
+    "components": {
+        "schemas": {
+            "Session": {
+                "type": "object",
+                "properties": {"id": {"type": "int"}, "key": {"type": "string"},},
+                "required": ["id", "key"],
+            }
+        },
+    },
+}
+
+
 def create_app(config):
     load_dotenv(verbose=True)
 
-    app = Pint(__name__, title='BattleShip')
+    app = Pint(__name__, title="BattleShip", base_model_schema=BASE_MODEL_SCHEMA)
     app = cors(app, allow_origin="*")
     app.json_encoder = Encoder
 
@@ -24,6 +39,7 @@ def create_app(config):
         await init()
 
     from battlefield.session.data.api import sessions, session
+
     app.register_blueprint(sessions)
     app.register_blueprint(session)
 

@@ -2,6 +2,7 @@ module BattleField.Session exposing (Model, Msg, init, view, getKey, update)
 
 
 import Result
+import Data.Session as DS
 import Http
 import Html as H
 import Html.Attributes as HA
@@ -12,10 +13,7 @@ import Process as P
 import Request.Default as R
 
 
-type alias Session =
-  { id : Int
-  , name : String
-  }
+type alias Session = DS.Session
 
 
 type alias Model =
@@ -56,10 +54,10 @@ loadSessions = R.getSessions {
     onSend = handleResp
   }
 
-handleResp : Result Http.Error () -> Msg
+handleResp : Result Http.Error (List DS.Session) -> Msg
 handleResp resp =
     case resp of
-      Result.Ok a -> Loaded [{ id = 1, name = "LoL" }]
+      Result.Ok list -> Loaded list
       Result.Err _ -> Error
 
 view : Model -> H.Html Msg
@@ -80,7 +78,7 @@ viewSession : Session -> H.Html Msg
 viewSession session =
   H.div [ HA.class "session" ]
         [ H.text (String.fromInt session.id)
-        , H.text session.name
+        , H.text session.key
         ]
 
 getKey : Model -> Nav.Key
