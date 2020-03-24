@@ -18,13 +18,13 @@ type alias Session = DS.Session
 
 type alias Model =
   { key : Nav.Key
+  , title : Maybe String
   , model : SessionModel
   }
 
 
 type alias SessionModel =
   { sessions : List Session
-  , title : Maybe String
   , status : Status
   }
 
@@ -39,10 +39,10 @@ type Msg = Loaded (List Session) | Error
 
 init : Nav.Key -> (Model, Cmd Msg)
 init key =
-  ({ key = key,
-     model = {
-       sessions = []
+  ({ key = key
      , title = Just "Sessions"
+     , model = {
+       sessions = []
      , status = Loading
      }
   }, loadSessions)
