@@ -1,4 +1,4 @@
-module BattleField.Session exposing (Model, Msg, init, view, getKey, update)
+module BattleField.Session exposing (Model, Status(..), Msg, init, view, viewSessionModel, getKey, update)
 
 
 import Result
@@ -17,8 +17,13 @@ type alias Session = DS.Session
 
 
 type alias Model =
+  { key : Nav.Key
+  , model : SessionModel
+  }
+
+
+type alias SessionModel =
   { sessions : List Session
-  , key : Nav.Key
   , title : Maybe String
   , status : Status
   }
@@ -34,20 +39,25 @@ type Msg = Loaded (List Session) | Error
 
 init : Nav.Key -> (Model, Cmd Msg)
 init key =
-  ({
-    sessions = []
-  , key = key
-  , title = Just "Sessions"
-  , status = Loading
+  ({ key = key,
+     model = {
+       sessions = []
+     , title = Just "Sessions"
+     , status = Loading
+     }
   }, loadSessions)
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
+update msg mainModel =
   case msg of
     Loaded list ->
-      ({ model | sessions = list, status = Success list}, Cmd.none)
+      let {key, model} = mainModel
+          newSessionModel = { model | sessions = list, status = Success list}
+      in ({mainModel | model = newSessionModel}, Cmd.none)
     Error ->
-      ({ model | status = Failure }, Cmd.none)
+      let {key, model} = mainModel
+          newSessionModel = { model | status = Failure }
+      in ({mainModel | model = newSessionModel}, Cmd.none)
 
 loadSessions : Cmd Msg
 loadSessions = R.getSessions {
@@ -61,7 +71,10 @@ handleResp resp =
       Result.Err _ -> Error
 
 view : Model -> H.Html Msg
-view model =
+view model = viewSessionModel model.model
+
+viewSessionModel : SessionModel -> H.Html Msg
+viewSessionModel model =
   case model.status of
     Loading ->
       H.div [ HA.class "loading" ]
