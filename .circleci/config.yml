@@ -7,6 +7,14 @@ jobs:
     steps:
       - checkout:
           path: ~/project
+      - setup_remote_docker
+      - run:
+          name: "Run openapi-generator-cli to generate the Elm client"
+          command: |
+            docker run -v ${PWD}:/tmp \
+              openapitools/openapi-generator-cli generate \
+              -i /tmp/api.json -g elm -o /tmp/client/generated/
+          working_directory: ~/project/
       - run: npm install
       - run: npm install elm@latest-0.19.1
       - run: echo "export PATH=$PWD/node_modules/.bin:$PATH" >> $BASH_ENV
@@ -15,6 +23,8 @@ jobs:
   backend:
     docker:
       - image: circleci/python:3.7.5
+    environment:
+      CONFIG_FILE: "../config.py"
     working_directory: ~/project/server
     steps:
       - checkout:
