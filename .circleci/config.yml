@@ -12,11 +12,10 @@ jobs:
           working_directory: ~/project/
           name: "Run openapi-generator-cli to generate the Elm client"
           command: |
-            echo $PWD
-            ls $PWD
-            docker run -v ${PWD}:/tmp \
-              openapitools/openapi-generator-cli generate \
-              -i /tmp/api.json -g elm -o /tmp/client/generated/
+            docker create -v /tmp --name openapi openapitools/openapi-generator-cli:latest
+            docker cp api.json openapi:/tmp
+            docker run --volumes-from openapi openapitools/openapi-generator-cli generate -i /tmp/api.json -g elm -o /tmp/client/generated/
+            docker cp openapi:/tmp/client/generated ./client/
       - run: npm install
       - run: npm install elm@latest-0.19.1
       - run: echo "export PATH=$PWD/node_modules/.bin:$PATH" >> $BASH_ENV

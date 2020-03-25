@@ -12,7 +12,7 @@ from .presenters import SessionPresenter
 # TODO: Separate in to modules to use __name__:
 # - Multiple sessions
 # - Single sessions
-sessions = PintBlueprint("multi_session", "sessions")
+sessions = PintBlueprint("sessions", "sessions")
 
 resp_obj = {
     "type": "array",
@@ -40,7 +40,7 @@ class Sessions(Resource):
         return jsonify(sessions)
 
 
-session = PintBlueprint("single_session", "session")
+session = PintBlueprint("session", "session")
 
 
 @session.route("/sessions/<int:id>")
