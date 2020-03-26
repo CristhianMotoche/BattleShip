@@ -13,6 +13,6 @@ suite =
 testLoading =
   test "Loading" <|
     \() ->
-      viewSessionModel ({sessions = [], title = Nothing, status = Loading})
+      viewSessionModel ({sessions = [], status = Loading})
       |> Query.fromHtml
       |> Query.has [HS.text "Loading..."]
