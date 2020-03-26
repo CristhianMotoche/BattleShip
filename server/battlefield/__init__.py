@@ -17,7 +17,10 @@ BASE_MODEL_SCHEMA = {
         "schemas": {
             "Session": {
                 "type": "object",
-                "properties": {"id": {"type": "int"}, "key": {"type": "string"},},
+                "properties": {
+                    "id": {"type": "int"},
+                    "key": {"type": "string"},
+                },
                 "required": ["id", "key"],
             }
         },
@@ -28,7 +31,9 @@ BASE_MODEL_SCHEMA = {
 def create_app(config):
     load_dotenv(verbose=True)
 
-    app = Pint(__name__, title="BattleShip", base_model_schema=BASE_MODEL_SCHEMA)
+    app = Pint(
+        __name__, title="BattleShip", base_model_schema=BASE_MODEL_SCHEMA
+    )
     app = cors(app, allow_origin="*")
     app.json_encoder = Encoder
 
