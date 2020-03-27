@@ -82,10 +82,11 @@ viewSessionModel model =
     Failure ->
       H.div [ HA.class "Failure" ]
             [ H.text "Something went wrong..." ]
+
     Success listSessions ->
       H.div [ HA.class "sessions" ]
-            [ H.div []
-                    (List.map viewSession listSessions)]
+            [ H.div [] (List.map viewSession listSessions)]
+
 
 viewSession : Session -> H.Html Msg
 viewSession session =
