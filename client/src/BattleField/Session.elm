@@ -84,15 +84,19 @@ viewSessionModel model =
             [ H.text "Something went wrong..." ]
 
     Success listSessions ->
-      H.div [ HA.class "sessions" ]
-            [ H.div [] (List.map viewSession listSessions)]
+      if List.isEmpty listSessions then
+        H.div [ HA.class "warn" ]
+              [ H.text "No sessions to play" ]
+      else
+        H.div [ HA.class "sessions" ]
+              (List.map viewSession listSessions)
 
 
 viewSession : Session -> H.Html Msg
 viewSession session =
   H.div [ HA.class "session" ]
-        [ H.text (String.fromInt session.id)
-        , H.text session.key
+        [ H.a [ HA.href "TODO", HA.class "button" ]
+              [ H.text ("Join " ++ session.key) ]
         ]
 
 getKey : Model -> Nav.Key

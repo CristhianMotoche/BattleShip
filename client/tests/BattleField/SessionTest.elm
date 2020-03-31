@@ -7,7 +7,6 @@ import Test.Html.Selector as HS
 import Fuzz exposing (Fuzzer, list)
 import Random
 import Shrink
-import Test.Html.Selector exposing (class, tag)
 import Expect
 
 import Data.Session as DS
@@ -17,7 +16,9 @@ import BattleField.Session exposing (Model, Status(..), viewSessionModel)
 
 suite : Test
 suite =
-  describe "Session.view" [testLoading, testSuccess]
+  describe
+    "Session.view"
+    [testLoading, testSuccessEmptyList, testSuccessWithElems]
 
 
 session : Fuzzer DS.Session
@@ -36,10 +37,18 @@ testLoading =
       |> Query.has [HS.text "Loading..."]
 
 
-testSuccess =
+testSuccessEmptyList =
+  test "Sucess Empty List" <|
+    \() ->
+        viewSessionModel ({sessions = [], status = Success []})
+        |> Query.fromHtml
+        |> Query.has [HS.text "No sessions to play"]
+
+
+testSuccessWithElems =
   fuzz (list session) "Sucess" <|
     \sessions ->
         viewSessionModel ({sessions = [], status = Success sessions})
         |> Query.fromHtml
-        |> Query.findAll [ class "session" ]
+        |> Query.findAll [ HS.class "session" ]
         |> Query.count (Expect.equal (List.length sessions))
