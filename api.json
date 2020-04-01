@@ -10,13 +10,42 @@
         }
     ],
     "paths": {
+        "/sessions/{id}": {
+            "get": {
+                "description": "",
+                "tags": [],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                },
+                "operationId": "get_session"
+            }
+        },
         "/sessions": {
             "post": {
                 "description": "",
                 "tags": [],
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "Session"
+                                }
+                            }
+                        }
                     }
                 },
                 "operationId": "post_sessions"
@@ -40,48 +69,6 @@
                     }
                 },
                 "operationId": "get_sessions"
-            }
-        },
-        "/sessions/{id}": {
-            "post": {
-                "description": "",
-                "tags": [],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "operationId": "post_session"
-            },
-            "get": {
-                "description": "",
-                "tags": [],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success"
-                    }
-                },
-                "operationId": "get_session"
             }
         }
     },

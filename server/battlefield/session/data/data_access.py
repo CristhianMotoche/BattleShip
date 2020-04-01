@@ -1,6 +1,6 @@
 from ..domain.repository import SessionRepository
-from .db import SessionTable
 from ..domain.entities import Session
+from .db import SessionTable
 from typing import List
 
 

@@ -43,10 +43,11 @@ def create_app(config):
     async def init_orm():
         await init()
 
-    from battlefield.session.data.api import sessions, session
-
-    app.register_blueprint(sessions)
+    from battlefield.session.data.api.single import session
     app.register_blueprint(session)
+
+    from battlefield.session.data.api.multi import sessions
+    app.register_blueprint(sessions)
 
     @app.cli.command()
     def openapi():
