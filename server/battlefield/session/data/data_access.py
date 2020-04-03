@@ -6,8 +6,10 @@ from typing import List
 
 class SessionDataAccess(SessionRepository):
 
-    async def save(self, session: Session):
-        await SessionTable(key=session.key).save()
+    async def save(self, session: Session) -> Session:
+        record = SessionTable(key=session.key)
+        await record.save()
+        return Session(id=record.id, key=record.key)
 
     async def list(self) -> List[Session]:
         sessions_db = await SessionTable.all()

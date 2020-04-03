@@ -1,4 +1,4 @@
-module BattleField.Session exposing (Model, Status(..), Msg, init, view, viewSessionModel, getKey, update)
+module BattleField.Session exposing (SessionModel, Model, Status(..), Msg, init, view, viewSessionModel, getKey, update)
 
 
 import Result
@@ -6,6 +6,7 @@ import Data.Session as DS
 import Http
 import Html as H
 import Html.Attributes as HA
+import Html.Events as HE
 import Browser.Navigation as Nav
 import Task as T
 import Process as P
@@ -34,7 +35,11 @@ type Status =
   | Success (List Session)
 
 
-type Msg = Loaded (List Session) | Error
+type Msg =
+  Loaded (List Session)
+  | CreateNew
+  | NewCreated Session
+  | Error
 
 
 init : Nav.Key -> (Model, Cmd Msg)
@@ -58,16 +63,32 @@ update msg mainModel =
       let {key, model} = mainModel
           newSessionModel = { model | status = Failure }
       in ({mainModel | model = newSessionModel}, Cmd.none)
+    CreateNew -> (mainModel, createNewSession)
+    NewCreated session -> (mainModel, Nav.load "TODO")
 
 loadSessions : Cmd Msg
 loadSessions = R.getSessions {
     onSend = handleResp
   }
 
+
+createNewSession : Cmd Msg
+createNewSession =
+  let debug = Debug.log "HERE"
+  in R.postSessions {
+    onSend = handleNew
+  }
+
 handleResp : Result Http.Error (List DS.Session) -> Msg
 handleResp resp =
     case resp of
       Result.Ok list -> Loaded list
+      Result.Err _ -> Error
+
+handleNew : Result Http.Error DS.Session -> Msg
+handleNew resp  =
+    case resp of
+      Result.Ok session -> NewCreated session
       Result.Err _ -> Error
 
 view : Model -> H.Html Msg
@@ -84,12 +105,20 @@ viewSessionModel model =
             [ H.text "Something went wrong..." ]
 
     Success listSessions ->
-      if List.isEmpty listSessions then
+      H.div [ HA.class "session-page" ]
+            [ viewSessions listSessions
+            , H.button [ HE.onClick CreateNew ] [ H.text "Create New one" ]
+            ]
+
+
+viewSessions : List DS.Session -> H.Html Msg
+viewSessions sessions =
+      if List.isEmpty sessions then
         H.div [ HA.class "warn" ]
               [ H.text "No sessions to play" ]
       else
         H.div [ HA.class "sessions" ]
-              (List.map viewSession listSessions)
+              (List.map viewSession sessions)
 
 
 viewSession : Session -> H.Html Msg

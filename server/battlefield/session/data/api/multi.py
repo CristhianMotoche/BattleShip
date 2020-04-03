@@ -28,9 +28,7 @@ class Sessions(Resource):
         return jsonify(result)
 
     @sessions.response(HTTPStatus.OK, "OK", resp_list)
-    async def get(self, session_id=None):
+    async def get(self):
         da = SessionDataAccess()
-        if session_id:
-            return jsonify({})
         sessions = await SessionLister(da).list()
         return jsonify(map(SessionPresenter, sessions))

@@ -13,8 +13,8 @@ class SessionCreator:
     async def create(self):
         key = self.__gen_key()
         session = Session(id=None, key=key)
-        await self._saver.save(session)
-        return session
+        new_session = await self._saver.save(session)
+        return new_session
 
     def __gen_key(self):
         return ''.join(choice(ascii_letters) for i in range(self.MAX_SIZE))

@@ -58,9 +58,9 @@ update msg model =
 
     (SessionMsg msgSession, Sessions sessionModel) ->
         let
-            (newModel, _) = Session.update msgSession sessionModel
+            (newModel, newCmd) = Session.update msgSession sessionModel
         in
-           (Sessions newModel, Cmd.none)
+           (Sessions newModel, Cmd.map SessionMsg newCmd)
 
     (URLChange urlChanged, _) ->
       changeRouteTo (Route.fromUrl urlChanged) model

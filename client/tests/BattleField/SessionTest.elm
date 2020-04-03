@@ -11,7 +11,7 @@ import Expect
 
 import Data.Session as DS
 
-import BattleField.Session exposing (Model, Status(..), viewSessionModel)
+import BattleField.Session exposing (SessionModel, Status(..), viewSessionModel)
 
 
 suite : Test
@@ -29,10 +29,18 @@ session =
        Fuzz.custom generator shinker
 
 
+testModel : SessionModel
+testModel = {
+    sessions = []
+  , status = Loading
+  , newSession = Nothing
+  }
+
+
 testLoading =
   test "Loading" <|
     \() ->
-      viewSessionModel ({sessions = [], status = Loading})
+      viewSessionModel testModel
       |> Query.fromHtml
       |> Query.has [HS.text "Loading..."]
 
@@ -40,7 +48,7 @@ testLoading =
 testSuccessEmptyList =
   test "Sucess Empty List" <|
     \() ->
-        viewSessionModel ({sessions = [], status = Success []})
+        viewSessionModel ({testModel | status = Success []})
         |> Query.fromHtml
         |> Query.has [HS.text "No sessions to play"]
 
@@ -48,7 +56,7 @@ testSuccessEmptyList =
 testSuccessWithElems =
   fuzz (list session) "Sucess" <|
     \sessions ->
-        viewSessionModel ({sessions = [], status = Success sessions})
+        viewSessionModel ({testModel | status = Success sessions})
         |> Query.fromHtml
         |> Query.findAll [ HS.class "session" ]
         |> Query.count (Expect.equal (List.length sessions))
