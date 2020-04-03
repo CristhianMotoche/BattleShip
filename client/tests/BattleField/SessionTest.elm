@@ -33,7 +33,6 @@ testModel : SessionModel
 testModel = {
     sessions = []
   , status = Loading
-  , newSession = Nothing
   }
 
 
