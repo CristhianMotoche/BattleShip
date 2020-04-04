@@ -11,6 +11,8 @@ import Browser.Navigation as Nav
 import Task as T
 import Process as P
 
+import BattleField.Route as BR
+
 import Request.Default as R
 
 
@@ -64,7 +66,7 @@ update msg mainModel =
           newSessionModel = { model | status = Failure }
       in ({mainModel | model = newSessionModel}, Cmd.none)
     CreateNew -> (mainModel, createNewSession)
-    NewCreated session -> (mainModel, Nav.load "TODO")
+    NewCreated session -> (mainModel, Nav.load (BR.toString <| BR.Session session.id))
 
 loadSessions : Cmd Msg
 loadSessions = R.getSessions {

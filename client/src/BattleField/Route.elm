@@ -1,12 +1,13 @@
 module BattleField.Route exposing (Route(..), toString, fromUrl)
 
 import Url exposing (Url)
-import Url.Parser exposing (Parser, map, oneOf, s, parse, top)
+import Url.Parser exposing (Parser, map, oneOf, s, parse, top, (</>), int)
 
 
 type Route
   = Index
   | Sessions
+  | Session Int
 
 
 fromUrl : Url -> Maybe Route
@@ -18,6 +19,7 @@ routeParser =
   oneOf
     [ map Index top
     , map Sessions (s "session")
+    , map Session (s "session" </> int)
     ]
 
 
@@ -26,3 +28,4 @@ toString route =
   case route of
     Index -> "/"
     Sessions -> "/session"
+    Session id -> "/session/" ++ String.fromInt id
