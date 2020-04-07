@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
@@ -10,21 +10,22 @@ import BattleField.Index as Index
 import BattleField.Session as Session
 import BattleField.Route as Route
 
--- JavaScript usage: app.ports.websocketIn.send(response);
--- port websocketIn : (String -> msg) -> Sub msg
--- JavaScript usage: app.ports.websocketOut.subscribe(handler);
--- port websocketOut : String -> Cmd msg
-
 
 main : Program () Model Msg
 main = Browser.application
     { init = init
     , update = update
     , view = view
-    , subscriptions = \_ -> Sub.none
+    , subscriptions = subs
     , onUrlChange = URLChange
     , onUrlRequest = URLRequest
     }
+
+-- JavaScript usage: app.ports.websocketIn.send(response);
+port websocketIn : (String -> msg) -> Sub msg
+
+subs : Model -> Sub Msg
+subs _ = websocketIn WSIn
 
 {- MODEL -}
 
@@ -45,16 +46,30 @@ type Msg =
     | SessionMsg Session.Msg
     | URLChange Url.Url
     | URLRequest Browser.UrlRequest
+    | WSIn String
+    | WSConnect Int
     | None ()
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case (msg, model) of
-    (IndexMsg msgIndex, Index indexModel) ->
+    (WSIn str, Index indexModel) ->
         let
-            (newIndexModel, _) = Index.update msgIndex indexModel
+            (newIndexModel, _) = Index.update (Index.wsin str) indexModel
         in
            (Index newIndexModel, Cmd.none)
+
+    (WSConnect int, Index indexModel) ->
+        let
+            (newIndexModel, _) = Index.update (Index.wsConnect int) indexModel
+        in
+           (Index newIndexModel, Cmd.none)
+
+    (IndexMsg msgIndex, Index indexModel) ->
+        let
+            (newIndexModel, cmdIndex) = Index.update msgIndex indexModel
+        in
+           (Index newIndexModel, Cmd.map IndexMsg cmdIndex)
 
     (SessionMsg msgSession, Sessions sessionModel) ->
         let
