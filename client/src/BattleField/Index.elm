@@ -36,7 +36,7 @@ update msg model =
   case msg of
     Submit -> (model, wsOut "Hello")
     WSIn str -> ({model | msg = str}, wsOut "Hello")
-    WSConnect int -> (model, wsConnect int)
+    WSConnect int -> (model, wsConnect (R.wsURL <| R.Session int))
 
 
 getKey : Model -> Nav.Key

@@ -1,4 +1,4 @@
-module BattleField.Route exposing (Route(..), toString, fromUrl)
+module BattleField.Route exposing (Route(..), toString, fromUrl, wsURL)
 
 import Url exposing (Url)
 import Url.Parser exposing (Parser, map, oneOf, s, parse, top, (</>), int)
@@ -29,3 +29,12 @@ toString route =
     Index -> "/"
     Sessions -> "/session"
     Session id -> "/session/" ++ String.fromInt id
+
+
+wsURL : Route -> String
+wsURL route =
+  let
+      -- NOTE: This URL is hardcoded for now. Eventually, we should inject it.
+      baseURL = "ws://127.0.0.1:5000/ws"
+   in
+    String.append baseURL <| toString route

@@ -1,6 +1,6 @@
 export function regiterToPorts(ports) {
-  ports.wsConnect.subscribe(function(session_id){
-    var ws = new WebSocket(`ws://127.0.0.1:5000/ws/${session_id}`);
+  ports.wsConnect.subscribe(function(path){
+    var ws = new WebSocket(path);
     ws.onmessage = function(message)
     {
       console.log(message);

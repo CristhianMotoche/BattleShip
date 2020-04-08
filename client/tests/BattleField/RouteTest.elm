@@ -1,7 +1,7 @@
-module BattleField.RouteTest exposing (suite)
+module BattleField.RouteTest exposing (suite, wsURLTest)
 
-import BattleField.Route exposing (Route(..), fromUrl, toString)
-import Test exposing (Test, describe, fuzz)
+import BattleField.Route exposing (Route(..), fromUrl, toString, wsURL)
+import Test exposing (Test, describe, fuzz, test)
 import Fuzz exposing (..)
 import Expect as E
 import Url exposing (Url, Protocol(..))
@@ -45,4 +45,14 @@ suite =
             |> formatUrl
             |> fromUrl
             |> E.equal (Just route)
+    ]
+
+wsURLTest : Test
+wsURLTest =
+  describe "WS URL from Route"
+    [
+      test "generates a url for the websocket" <|
+      \() ->
+        wsURL (Session 1234)
+        |> E.equal "ws://127.0.0.1:5000/ws/session/1234"
     ]

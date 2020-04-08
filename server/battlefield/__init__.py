@@ -70,7 +70,7 @@ def create_app(config):
     from battlefield.session.data.api.multi import sessions
     app.register_blueprint(sessions)
 
-    @app.websocket('/ws/<int:session_id>')
+    @app.websocket('/ws/session/<int:session_id>')
     @collect_websocket
     async def ws(session_id):
         while True:
