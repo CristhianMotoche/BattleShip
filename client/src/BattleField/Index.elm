@@ -1,4 +1,4 @@
-port module BattleField.Index exposing (Model, Msg(..), init, view, update, getKey, wsin, wsConnect)
+module BattleField.Index exposing (Model, Msg(..), init, view, update, getKey, wsin, wsIndexConnect)
 
 
 import Html as H
@@ -7,13 +7,7 @@ import Html.Events as HE
 import Browser.Navigation as Nav
 
 import BattleField.Route as R
-
-
--- JavaScript usage: app.ports.websocketIn.send(response);
---port websocketIn : (String -> msg) -> Sub msg
--- JavaScript usage: app.ports.websocketOut.subscribe(handler);
-port websocketOut : String -> Cmd msg
-port websocketConnect : Int -> Cmd msg
+import BattleField.Websocket exposing (wsOut, wsConnect)
 
 
 type alias Model =
@@ -35,14 +29,14 @@ type Msg = Submit | WSIn String | WSConnect Int
 
 wsin = WSIn
 
-wsConnect = WSConnect
+wsIndexConnect = WSConnect
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Submit -> (model, websocketOut "Hello")
-    WSIn str -> ({model | msg = str}, websocketOut "Hello")
-    WSConnect int -> (model, websocketConnect int)
+    Submit -> (model, wsOut "Hello")
+    WSIn str -> ({model | msg = str}, wsOut "Hello")
+    WSConnect int -> (model, wsConnect int)
 
 
 getKey : Model -> Nav.Key

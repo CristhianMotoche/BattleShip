@@ -1,4 +1,4 @@
-port module Main exposing (main)
+module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
@@ -9,6 +9,7 @@ import Url
 import BattleField.Index as Index
 import BattleField.Session as Session
 import BattleField.Route as Route
+import BattleField.Websocket exposing (wsIn)
 
 
 main : Program () Model Msg
@@ -21,11 +22,8 @@ main = Browser.application
     , onUrlRequest = URLRequest
     }
 
--- JavaScript usage: app.ports.websocketIn.send(response);
-port websocketIn : (String -> msg) -> Sub msg
-
 subs : Model -> Sub Msg
-subs _ = websocketIn WSIn
+subs _ = wsIn WSIn
 
 {- MODEL -}
 
@@ -61,7 +59,7 @@ update msg model =
 
     (WSConnect int, Index indexModel) ->
         let
-            (newIndexModel, _) = Index.update (Index.wsConnect int) indexModel
+            (newIndexModel, _) = Index.update (Index.wsIndexConnect int) indexModel
         in
            (Index newIndexModel, Cmd.none)
 
