@@ -9,6 +9,7 @@ import Url
 import BattleField.Index as Index
 import BattleField.Session as Session
 import BattleField.Route as Route
+import BattleField.Game as Game
 import BattleField.Websocket exposing (wsIn)
 
 
@@ -32,6 +33,7 @@ type Model =
   | NotFound Nav.Key
   | Index Index.Model
   | Sessions Session.Model
+  | Game Game.Model
 
 init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 init _ url key =
@@ -42,6 +44,7 @@ init _ url key =
 type Msg =
       IndexMsg Index.Msg
     | SessionMsg Session.Msg
+    | GameMsg Game.Msg
     | URLChange Url.Url
     | URLRequest Browser.UrlRequest
     | WSIn String
@@ -102,11 +105,10 @@ changeRouteTo maybeRoute model =
         let (x, sessions) = (Session.init key)
         in
           (Sessions x, Cmd.map SessionMsg sessions)
-      -- TODO: Implement route
       Just (Route.Session id) ->
-        let (x, sessions) = (Session.init key)
+        let (gameModel, gameCmd) = (Game.init key id)
         in
-          (Sessions x, Cmd.none)
+          (Game gameModel, Cmd.map GameMsg gameCmd)
 
 
 getKey : Model -> Nav.Key
@@ -116,6 +118,7 @@ getKey model =
     NotFound key -> key
     Index indexModel -> Index.getKey indexModel
     Sessions sesionModel -> Session.getKey sesionModel
+    Game gameModel -> Game.getKey gameModel
 
 
 {- VIEW -}
@@ -136,6 +139,8 @@ view model =
         viewPage IndexMsg (Index.view modelIndex) modelIndex.title
       Sessions modelSession ->
         viewPage SessionMsg (Session.view modelSession) modelSession.title
+      Game gameModel ->
+        viewPage GameMsg (Game.view gameModel) gameModel.title
       Redirect _ -> viewPage None (H.div [][ H.text "Loading.."]) (Just "Redirecting...")
       NotFound _ -> viewPage None (H.div [][ H.text "Not found :("]) (Just "Not Found")
 
