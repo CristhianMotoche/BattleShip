@@ -66,7 +66,10 @@ update msg mainModel =
           newSessionModel = { model | status = Failure }
       in ({mainModel | model = newSessionModel}, Cmd.none)
     CreateNew -> (mainModel, createNewSession)
-    NewCreated session -> (mainModel, Nav.load (BR.toString <| BR.Session session.id))
+    NewCreated session -> (mainModel, Nav.load (gameUrlById session.id))
+
+gameUrlById : Int -> String
+gameUrlById id = BR.toString <| BR.Session id
 
 loadSessions : Cmd Msg
 loadSessions = R.getSessions {
@@ -126,7 +129,7 @@ viewSessions sessions =
 viewSession : Session -> H.Html Msg
 viewSession session =
   H.div [ HA.class "session" ]
-        [ H.a [ HA.href "TODO", HA.class "button" ]
+        [ H.a [ HA.href <| gameUrlById session.id, HA.class "button" ]
               [ H.text ("Join " ++ session.key) ]
         ]
 
