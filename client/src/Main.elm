@@ -10,7 +10,6 @@ import BattleField.Index as Index
 import BattleField.Session as Session
 import BattleField.Route as Route
 import BattleField.Game as Game
-import BattleField.Websocket exposing (wsIn)
 
 
 main : Program () Model Msg
@@ -24,7 +23,10 @@ main = Browser.application
     }
 
 subs : Model -> Sub Msg
-subs _ = wsIn WSIn
+subs model =
+  case model of
+    Game gameModel -> Sub.map GameMsg (Game.subs gameModel)
+    _ -> Sub.none
 
 {- MODEL -}
 
@@ -47,24 +49,17 @@ type Msg =
     | GameMsg Game.Msg
     | URLChange Url.Url
     | URLRequest Browser.UrlRequest
-    | WSIn String
     | WSConnect Int
     | None ()
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case (msg, model) of
-    (WSIn str, Index indexModel) ->
+    (GameMsg gameMsg, Game gameModel) ->
         let
-            (newIndexModel, _) = Index.update (Index.wsin str) indexModel
+            (newGameModel, cmdGame) = Game.update gameMsg gameModel
         in
-           (Index newIndexModel, Cmd.none)
-
-    (WSConnect int, Index indexModel) ->
-        let
-            (newIndexModel, _) = Index.update (Index.wsIndexConnect int) indexModel
-        in
-           (Index newIndexModel, Cmd.none)
+           (Game newGameModel, Cmd.map GameMsg cmdGame)
 
     (IndexMsg msgIndex, Index indexModel) ->
         let
