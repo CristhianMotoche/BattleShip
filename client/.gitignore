@@ -4,3 +4,4 @@ dist/
 .cache/
 !generated/.openapi-generator-ignore
 generated/
+parcel-debug-*
