@@ -2,6 +2,7 @@ module BattleField.Game exposing (Model, Msg, getKey, init, view, update, subs)
 
 import Html as H
 import Html.Events as HE
+import Html.Attributes as HA
 
 import Browser.Navigation as Nav
 
@@ -14,6 +15,9 @@ type alias Model =
   , title : Maybe String
   , msg : String
   }
+
+size : Int
+size = 10
 
 subs : Model -> Sub Msg
 subs _ = WS.wsIn WSIn
@@ -45,8 +49,20 @@ view model =
   H.div
     []
     [ H.text model.msg
-    , H.div []
-            [ H.button [ HE.onClick (WSOut "Hello!") ]
-                       [ H.text "Send hello!" ]
-            ]
+    , boardView
+    , boardView
+    , H.button [ HE.onClick (WSOut "Hello!") ]
+               [ H.text "Send hello!" ]
     ]
+
+
+boardView : H.Html msg
+boardView =
+  H.div
+    [ HA.class "board" ]
+    <| List.repeat (size * size) squareView
+
+
+squareView : H.Html msg
+squareView =
+  H.div [ HA.class "square" ] []

@@ -1,0 +1,15 @@
+.board {
+  display: grid;
+  grid-template-rows: repeat(10, auto);
+  grid-template-columns: repeat(10, auto);
+  border: 1px dashed black;
+  padding: 1rem;
+}
+
+.square {
+  height: 1rem;
+  width: 1rem;
+  border: 1px solid black;
+  padding: 0.1rem;
+  margin: 0.5rem;
+}
