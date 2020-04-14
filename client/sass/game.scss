@@ -4,11 +4,12 @@
   grid-template-columns: repeat(10, auto);
   border: 1px dashed black;
   padding: 1rem;
+  grid-auto-flow: column;
 }
 
 .square {
-  height: 1rem;
-  width: 1rem;
+  height: 2rem;
+  width: 2rem;
   border: 1px solid black;
   padding: 0.1rem;
   margin: 0.5rem;
