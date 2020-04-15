@@ -19,7 +19,7 @@ type alias Model =
 size : Int
 size = 10
 
-type alias Board = List Square
+type alias Board = List (List Square)
 type alias Square = (String, Int)
 
 subs : Model -> Sub Msg
@@ -59,29 +59,52 @@ view model =
     ]
 
 
+
+nums = List.range 1 size
+
 board : Board
 board =
   let
       alphas = String.split "" "ABCDEFGHIJ"
-      nums = List.range 1 size
   in
-     List.concatMap (\x -> List.map (\y -> (x, y)) nums) alphas
+     List.map (\x -> List.map (\y -> (x, y)) nums) alphas
 
 alphaIndexView : List (H.Html msg)
 alphaIndexView =
   let
      singleAlphaView letter = H.div [][ H.text letter ]
   in
-     List.map singleAlphaView <| String.split "" "ABCDEFGHIJ"
+     List.map singleAlphaView <| String.split "" "XABCDEFGHIJ"
+
+numsIndexView : List (H.Html msg)
+numsIndexView =
+  let
+     singleAlphaView num = H.div [][ H.text <| String.fromInt num ]
+  in
+     List.map singleAlphaView <| List.range 1 size
 
 
 boardView : Board -> H.Html msg
 boardView b =
   H.div [ HA.class "board" ]
-        <| List.map squareView b
+        <| List.append alphaIndexView
+        <| List.concatMap indexSquareView (zip nums b)
 
+indexSquareView : (Int, List Square) -> List (H.Html msg)
+indexSquareView (idx, squares) =
+  H.div [ HA.class "num" ][ H.text <| String.fromInt idx ]
+  :: List.map squareView squares
 
 squareView : Square -> H.Html msg
 squareView (c, i) =
   H.div [ HA.class "square" ]
         [ H.text <| c ++ String.fromInt i]
+
+
+zip : List a -> List b -> List (a, b)
+zip la lb =
+  case (la, lb) of
+    ([], []) -> []
+    ([], _) -> []
+    (_, []) -> []
+    (a::as_, b::bs) -> (a, b) :: zip as_ bs
