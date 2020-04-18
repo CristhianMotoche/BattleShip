@@ -14,8 +14,8 @@ type alias Model =
   { key : Nav.Key
   , title : Maybe String
   , msg : String
-  , boatFirstPos : Maybe Square
-  , boatLastPos : Maybe Square
+  , ourBoard : Board
+  , theirBoard : Board
   }
 
 size : Int
@@ -34,14 +34,16 @@ subs _ = WS.wsIn WSIn
 type Msg =
   WSIn String
   | WSOut String
+  | SetBoatHead Pos
+  | SetBoatTail Pos
 
 init : Nav.Key -> Int -> (Model, Cmd Msg)
 init key sessionId =
   ({ key = key
    , title = Just "Game"
    , msg = "Waiting..."
-  , boatFirstPos = Nothing
-  , boatLastPos = Nothing
+   , ourBoard = initBoard
+   , theirBoard = initBoard
    }
   , WS.wsConnect (BR.wsURL <| BR.Session sessionId)
   )
@@ -51,6 +53,22 @@ update msg model =
   case msg of
     WSIn str -> ({model | msg = str}, Cmd.none)
     WSOut str -> (model, WS.wsOut str)
+    SetBoatHead pos ->
+        ({ model | ourBoard = setBoatHead pos initBoard}, Cmd.none)
+    SetBoatTail square -> (model, Cmd.none)
+
+
+setBoatHead : Pos -> Board -> Board
+setBoatHead pos board =
+  List.indexedMap
+    (\_ squareList ->
+      List.indexedMap
+        (\_ square ->
+            if square.pos == pos
+            then { square | usedByBoat = True }
+            else square
+        ) squareList
+    ) board
 
 getKey : Model -> Nav.Key
 getKey model = model.key
@@ -61,8 +79,8 @@ view model =
     []
     [ H.text model.msg
     , H.div [ HA.class "us" ]
-            [ boardView (model.boatFirstPos, model.boatLastPos) board ]
-    , H.div [ HA.class "them" ][ boardView (Nothing, Nothing) board ]
+            [ boardView  model.ourBoard ]
+    , H.div [ HA.class "them" ][ boardView  model.theirBoard ]
     , H.button [ HE.onClick (WSOut "Hello!") ]
                [ H.text "Send hello!" ]
     ]
@@ -71,8 +89,8 @@ view model =
 alphas = String.split "" "ABCDEFGHIJ"
 nums = List.range 1 size
 
-board : Board
-board =
+initBoard : Board
+initBoard =
   let
       toSquare pos =
         { pos = pos
@@ -96,13 +114,11 @@ numsIndexView =
      List.map singleAlphaView <| List.range 1 size
 
 
-boardView : (Maybe Square, Maybe Square) -> Board -> H.Html msg
-boardView boatPosition b =
+boardView : Board -> H.Html Msg
+boardView b =
   H.div [ HA.class "board" ]
     <| List.append (letterView "X" :: List.map numView nums)
-    <| case boatPosition of
-        (Just fistPos, _) -> []
-        (_, _) -> List.concatMap alphaSquareView (List.map2 Tuple.pair alphas b)
+    <| List.concatMap alphaSquareView (List.map2 Tuple.pair alphas b)
 
 letterView : String -> H.Html msg
 letterView letter = H.div [ HA.class "letter" ][ H.text letter ]
@@ -110,18 +126,19 @@ letterView letter = H.div [ HA.class "letter" ][ H.text letter ]
 numView : Int -> H.Html ms
 numView idx = H.div [ HA.class "num" ][ H.text <| String.fromInt idx ]
 
-alphaSquareView : (String, List Square) -> List (H.Html msg)
+alphaSquareView : (String, List Square) -> List (H.Html Msg)
 alphaSquareView (letter, squares) =
   letterView letter :: List.map squareView squares
 
-squareView : Square -> H.Html msg
+squareView : Square -> H.Html Msg
 squareView {pos, usedByBoat} =
   let
       (c, i) = pos
   in
-    H.div [ HA.class "square",
-            if usedByBoat
+    H.div [ HA.class "square"
+          , if usedByBoat
             then HA.class "used-by-boat"
             else HA.class ""
+          , HE.onClick (SetBoatHead pos)
           ]
           [ H.text <| c ++ String.fromInt i ]
