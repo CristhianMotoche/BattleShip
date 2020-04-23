@@ -6,6 +6,8 @@ import Html.Attributes as HA
 
 import Browser.Navigation as Nav
 
+import List.Extra as LE
+
 import BattleField.Websocket as WS
 import BattleField.Route as BR
 
@@ -89,7 +91,7 @@ update msg model =
             Just err -> ({ model | placingError = Just err }, Cmd.none)
             Nothing ->
               ({ model |
-                 ourBoard = setBoatTail pos model.ourBoard
+                 ourBoard = setBoatTail (headPos, pos) model.ourBoard
                , tailShip = Just pos
                , placingError = Nothing
                }, Cmd.none)
@@ -121,17 +123,29 @@ setBoatHead pos board =
         ) squareList
     ) board
 
-setBoatTail : Pos -> Board -> Board
-setBoatTail pos board =
+setBoatTail : (Pos, Pos) -> Board -> Board
+setBoatTail positions board =
   List.indexedMap
     (\_ squareList ->
       List.indexedMap
         (\_ square ->
-            if square.pos == pos
+            if memberInLine square.pos positions
             then { square | usedByBoat = True }
             else square
         ) squareList
     ) board
+
+
+memberInLine : Pos -> (Pos, Pos) -> Bool
+memberInLine (ai, aj) (h, t) =
+  let
+      (mxi, mxj) = max h t
+      (mni, mnj) = min h t
+      rangei = LE.dropWhile (\a -> a /= mni) <| LE.dropWhileRight (\a -> a /= mxi) alphas
+      rangej = LE.dropWhile (\a -> a /= mnj) <| LE.dropWhileRight (\a -> a /= mxj) nums
+  in
+    List.member ai rangei && List.member aj rangej
+
 
 getKey : Model -> Nav.Key
 getKey model = model.key
