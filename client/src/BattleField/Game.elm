@@ -41,6 +41,9 @@ placingErrorToText  err =
 size : Int
 size = 10
 
+boatLen : Int
+boatLen = 5
+
 type alias Board = List (List Square)
 type alias Pos = (String, Int)
 type alias Square =
@@ -104,11 +107,18 @@ positionAvailable (headPos, tailPos) board =
   let
       squares = List.concat board
       ((hi, hj), (ti, tj)) = (headPos, tailPos)
+      inAxis = hi == ti || hj == tj
+      offset = 1
+      alphaToInt a = Maybe.withDefault 0 <| LE.elemIndex a alphas
+      distance = abs (alphaToInt hi - alphaToInt ti) + abs (hj - tj) + offset
+      tooFar = distance > boatLen
+      tooClose = distance < boatLen
   in
-       if hi == ti || hj == tj then
-         Nothing
-       else
-         Just NotInAxis
+     case (inAxis, tooFar, tooClose) of
+       (True, False, False) -> Nothing
+       (True, True, _) -> Just TooLarge
+       (True, _, True) -> Just TooSmall
+       (False, _, _) -> Just NotInAxis
 
 
 setBoatHead : Pos -> Board -> Board
