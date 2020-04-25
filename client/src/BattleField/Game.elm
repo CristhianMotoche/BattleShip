@@ -12,6 +12,8 @@ import BattleField.Websocket as WS
 import BattleField.Route as BR
 
 
+-- MODEL
+
 type alias Model =
   { key : Nav.Key
   , title : Maybe String
@@ -38,12 +40,6 @@ placingErrorToText  err =
     NotInAxis -> "That position is not in the right axis"
     AlreadyUsed -> "Position already used"
 
-size : Int
-size = 10
-
-boatLen : Int
-boatLen = 5
-
 type alias Board = List (List Square)
 type alias Pos = (String, Int)
 type alias Square =
@@ -55,14 +51,30 @@ type alias Cans =
   , canSetHead : Bool
   }
 
-subs : Model -> Sub Msg
-subs _ = WS.wsIn WSIn
+size : Int
+size = 10
 
-type Msg =
-  WSIn String
-  | WSOut String
-  | SetBoatHead Pos
-  | SetBoatTail Pos
+boatLen : Int
+boatLen = 5
+
+alphas = String.split "" "ABCDEFGHIJ"
+nums = List.range 1 size
+
+initBoard : Board
+initBoard =
+  let
+      toSquare pos =
+        { pos = pos
+        , usedByBoat = False
+        }
+  in
+    List.map
+      (\x -> List.map
+        (\y -> toSquare (x, y))
+        nums
+      )
+      alphas
+
 
 init : Nav.Key -> Int -> (Model, Cmd Msg)
 init key sessionId =
@@ -78,6 +90,22 @@ init key sessionId =
    }
   , WS.wsConnect (BR.wsURL <| BR.Session sessionId)
   )
+
+-- SUBS
+
+subs : Model -> Sub Msg
+subs _ = WS.wsIn WSIn
+
+-- MSG
+
+type Msg =
+  WSIn String
+  | WSOut String
+  | SetBoatHead Pos
+  | SetBoatTail Pos
+
+
+-- UPDATE
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -105,7 +133,6 @@ update msg model =
 positionAvailable : (Pos, Pos) -> Board -> Maybe PlacingError
 positionAvailable (headPos, tailPos) board =
   let
-      squares = List.concat board
       ((hi, hj), (ti, tj)) = (headPos, tailPos)
       inAxis = hi == ti || hj == tj
       offset = 1
@@ -151,14 +178,19 @@ memberInLine (ai, aj) (h, t) =
   let
       (mxi, mxj) = max h t
       (mni, mnj) = min h t
-      rangei = LE.dropWhile (\a -> a /= mni) <| LE.dropWhileRight (\a -> a /= mxi) alphas
-      rangej = LE.dropWhile (\a -> a /= mnj) <| LE.dropWhileRight (\a -> a /= mxj) nums
+      genRange (minVal, maxVal) list =
+        LE.dropWhile (\a -> a /= minVal)
+        <| LE.dropWhileRight (\a -> a /= maxVal)
+        <| list
+      rangei =  genRange (mni, mxi) alphas
+      rangej = genRange (mnj, mxj) nums
   in
     List.member ai rangei && List.member aj rangej
 
-
 getKey : Model -> Nav.Key
 getKey model = model.key
+
+-- VIEW
 
 view : Model -> H.Html Msg
 view model =
@@ -183,25 +215,6 @@ view model =
     , H.button [ HE.onClick (WSOut "Hello!") ]
                [ H.text "Send hello!" ]
     ]
-
-
-alphas = String.split "" "ABCDEFGHIJ"
-nums = List.range 1 size
-
-initBoard : Board
-initBoard =
-  let
-      toSquare pos =
-        { pos = pos
-        , usedByBoat = False
-        }
-  in
-    List.map
-      (\x -> List.map
-        (\y -> toSquare (x, y))
-        nums
-      )
-      alphas
 
 alphaIndexView : List (H.Html msg)
 alphaIndexView =

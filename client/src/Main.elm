@@ -49,7 +49,6 @@ type Msg =
     | GameMsg Game.Msg
     | URLChange Url.Url
     | URLRequest Browser.UrlRequest
-    | WSConnect Int
     | None ()
 
 update : Msg -> Model -> (Model, Cmd Msg)
