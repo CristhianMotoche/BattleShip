@@ -23,14 +23,21 @@ type alias Model =
   , theirBoard : Board
   , headShip : Maybe Pos
   , tailShip : Maybe Pos
-  , phase : Phase
+  , ourPhase : Phase
+  , theirPhase : Phase
   }
 
 type PlacingError =
   TooLarge | TooSmall | NotInAxis | AlreadyUsed
 
-type Phase = PlacingBoats | Playing
+type Phase = PlacingShips | Ready | Playing
 
+phaseToText : Phase -> String
+phaseToText phase =
+  case phase of
+    PlacingShips -> "Placing ships..."
+    Ready -> "Ready!"
+    Playing -> "Play!"
 
 placingErrorToText : PlacingError -> String
 placingErrorToText  err =
@@ -44,7 +51,7 @@ type alias Board = List (List Square)
 type alias Pos = (String, Int)
 type alias Square =
   { pos : Pos
-  , usedByBoat : Bool
+  , usedByShip : Bool
   }
 type alias Cans =
   { canSetTail : Bool
@@ -54,8 +61,8 @@ type alias Cans =
 size : Int
 size = 10
 
-boatLen : Int
-boatLen = 5
+shipLen : Int
+shipLen = 5
 
 alphas = String.split "" "ABCDEFGHIJ"
 nums = List.range 1 size
@@ -65,7 +72,7 @@ initBoard =
   let
       toSquare pos =
         { pos = pos
-        , usedByBoat = False
+        , usedByShip = False
         }
   in
     List.map
@@ -86,7 +93,8 @@ init key sessionId =
    , theirBoard = initBoard
    , headShip = Nothing
    , tailShip = Nothing
-   , phase = PlacingBoats
+   , ourPhase = PlacingShips
+   , theirPhase = PlacingShips
    }
   , WS.wsConnect (BR.wsURL <| BR.Session sessionId)
   )
@@ -101,8 +109,8 @@ subs _ = WS.wsIn WSIn
 type Msg =
   WSIn String
   | WSOut String
-  | SetBoatHead Pos
-  | SetBoatTail Pos
+  | SetShipHead Pos
+  | SetShipTail Pos
 
 
 -- UPDATE
@@ -112,20 +120,21 @@ update msg model =
   case msg of
     WSIn str -> ({model | msg = str}, Cmd.none)
     WSOut str -> (model, WS.wsOut str)
-    SetBoatHead pos ->
-        ({ model | ourBoard = setBoatHead pos model.ourBoard, headShip = Just pos},
+    SetShipHead pos ->
+        ({ model | ourBoard = setShipHead pos model.ourBoard, headShip = Just pos},
         Cmd.none)
-    SetBoatTail pos ->
+    SetShipTail pos ->
       case model.headShip of
         Just headPos ->
           case positionAvailable (headPos, pos) model.ourBoard of
             Just err -> ({ model | placingError = Just err }, Cmd.none)
             Nothing ->
               ({ model |
-                 ourBoard = setBoatTail (headPos, pos) model.ourBoard
+                 ourBoard = setShipTail (headPos, pos) model.ourBoard
                , tailShip = Just pos
                , placingError = Nothing
-               }, Cmd.none)
+               , ourPhase = Ready
+               }, WS.wsOut "Ready")
         Nothing ->
               (model, Cmd.none)
 
@@ -138,8 +147,8 @@ positionAvailable (headPos, tailPos) board =
       offset = 1
       alphaToInt a = Maybe.withDefault 0 <| LE.elemIndex a alphas
       distance = abs (alphaToInt hi - alphaToInt ti) + abs (hj - tj) + offset
-      tooFar = distance > boatLen
-      tooClose = distance < boatLen
+      tooFar = distance > shipLen
+      tooClose = distance < shipLen
   in
      case (inAxis, tooFar, tooClose) of
        (True, False, False) -> Nothing
@@ -148,26 +157,26 @@ positionAvailable (headPos, tailPos) board =
        (False, _, _) -> Just NotInAxis
 
 
-setBoatHead : Pos -> Board -> Board
-setBoatHead pos board =
+setShipHead : Pos -> Board -> Board
+setShipHead pos board =
   List.indexedMap
     (\_ squareList ->
       List.indexedMap
         (\_ square ->
             if square.pos == pos
-            then { square | usedByBoat = True }
+            then { square | usedByShip = True }
             else square
         ) squareList
     ) board
 
-setBoatTail : (Pos, Pos) -> Board -> Board
-setBoatTail positions board =
+setShipTail : (Pos, Pos) -> Board -> Board
+setShipTail positions board =
   List.indexedMap
     (\_ squareList ->
       List.indexedMap
         (\_ square ->
             if memberInLine square.pos positions
-            then { square | usedByBoat = True }
+            then { square | usedByShip = True }
             else square
         ) squareList
     ) board
@@ -197,6 +206,14 @@ view model =
   H.div
     []
     [ H.text model.msg
+    , H.div [ HA.class "our-phase" ]
+            [ H.strong [][ H.text "Your status:" ]
+            , H.text <| phaseToText model.ourPhase
+            ]
+    , H.div [ HA.class "their-phase" ]
+            [ H.strong [][ H.text "Their status:" ]
+            , H.text <| phaseToText model.theirPhase
+            ]
     , case model.placingError of
       Nothing -> H.div [] []
       Just err -> H.div [ HA.class "error" ] [ H.text <| placingErrorToText err ]
@@ -248,18 +265,18 @@ alphaSquareView cans (letter, squares) =
   letterView letter :: List.map (squareView cans) squares
 
 squareView : Cans -> Square -> H.Html Msg
-squareView {canSetHead, canSetTail} {pos, usedByBoat} =
+squareView {canSetHead, canSetTail} {pos, usedByShip} =
   let
       (c, i) = pos
       event =
         case (canSetHead, canSetTail) of
-          (True, _) -> [HE.onClick <| SetBoatHead pos]
-          (_, True) -> [HE.onClick <| SetBoatTail pos]
+          (True, _) -> [HE.onClick <| SetShipHead pos]
+          (_, True) -> [HE.onClick <| SetShipTail pos]
           (_, _) -> []
       attrs =
         List.append [ HA.class "square"]
-        <| if usedByBoat
-           then [HA.class "used-by-boat"]
+        <| if usedByShip
+           then [HA.class "used-by-ship"]
            else event
   in
     H.div attrs [ H.text <| c ++ String.fromInt i ]

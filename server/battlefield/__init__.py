@@ -1,4 +1,3 @@
-from quart import websocket
 from quart_openapi import Pint
 from quart_cors import cors
 from battlefield.utils import init
@@ -6,8 +5,6 @@ from battlefield.utils.json import Encoder
 from dotenv import load_dotenv
 
 from tortoise import Tortoise
-
-import asyncio
 
 
 import json
@@ -44,22 +41,6 @@ def create_app(config):
 
     app.clients = set()
 
-    def collect_websocket(func):
-        async def wrapper(session_id, *args, **kwargs):
-            if len(list(filter(lambda ws: ws[0] == session_id, app.clients))) > 1:
-                await websocket.send(f"NO MORE PLAYERS ARE ALLOWED! GET OUT!")
-            app.clients.add((session_id, websocket._get_current_object()))
-            try:
-                return await func(session_id, *args, **kwargs)
-            finally:
-                app.clients.remove((session_id, websocket._get_current_object()))
-        return wrapper
-
-    async def broadcast(session_id, message):
-        for websock in app.clients:
-            if session_id == websock[0]:
-                await websock[1].send(b'New connection')
-
     @app.before_serving
     async def init_orm():
         await init()
@@ -70,16 +51,8 @@ def create_app(config):
     from battlefield.session.data.api.multi import sessions
     app.register_blueprint(sessions)
 
-    @app.websocket('/ws/session/<int:session_id>')
-    @collect_websocket
-    async def ws(session_id):
-        while True:
-            try:
-                data = await websocket.receive()
-            except asyncio.CancelledError:
-                print("Gone forever...")
-                raise
-            await broadcast(session_id, f"echo {data}")
+    from battlefield.game.data.websocket import game
+    app.register_blueprint(game)
 
     @app.cli.command()
     def openapi():
