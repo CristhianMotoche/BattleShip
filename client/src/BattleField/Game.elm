@@ -4,6 +4,9 @@ import Html as H
 import Html.Events as HE
 import Html.Attributes as HA
 
+import Process
+import Task
+
 import Browser.Navigation as Nav
 
 import List.Extra as LE
@@ -102,15 +105,21 @@ init key sessionId =
 -- SUBS
 
 subs : Model -> Sub Msg
-subs _ = WS.wsIn WSIn
+subs _ =
+  Sub.batch
+    [ WS.wsIn WSIn
+    , WS.wsError WSError
+    ]
 
 -- MSG
 
 type Msg =
   WSIn String
   | WSOut String
+  | WSError String
   | SetShipHead Pos
   | SetShipTail Pos
+  | RedirectError
 
 
 -- UPDATE
@@ -120,6 +129,8 @@ update msg model =
   case msg of
     WSIn str -> ({model | msg = str}, Cmd.none)
     WSOut str -> (model, WS.wsOut str)
+    WSError err -> ({model | msg = err}, redirectAfterShowError)
+    RedirectError -> (model, Nav.load <| BR.toString BR.Sessions)
     SetShipHead pos ->
         ({ model | ourBoard = setShipHead pos model.ourBoard, headShip = Just pos},
         Cmd.none)
@@ -137,6 +148,12 @@ update msg model =
                }, WS.wsOut "Ready")
         Nothing ->
               (model, Cmd.none)
+
+
+redirectAfterShowError : Cmd Msg
+redirectAfterShowError =
+  Process.sleep 1000
+    |> Task.perform (\_ -> RedirectError)
 
 
 positionAvailable : (Pos, Pos) -> Board -> Maybe PlacingError

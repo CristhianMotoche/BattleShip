@@ -1,5 +1,6 @@
 import asyncio
-from quart import websocket
+
+from quart import abort, websocket
 from quart import current_app
 from quart_openapi import PintBlueprint
 
@@ -22,7 +23,7 @@ def collect_websocket(func):
             )
             > 1
         ):
-            await websocket.send(f"NO MORE PLAYERS ARE ALLOWED! GET OUT!")
+            abort(403)
         current_app.clients.add((session_id, websocket._get_current_object()))
         try:
             return await func(session_id, *args, **kwargs)
