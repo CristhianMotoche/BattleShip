@@ -3,11 +3,11 @@ export function regiterToPorts(ports) {
     var ws = new WebSocket(path);
 
     ws.onerror = function (event) {
-      ports.wsError.send(JSON.stringify({data:"ERROR",timeStamp:event.timeStamp}));
+      ports.wsError.send("ERROR");
     }
 
     ws.onmessage = function(message) {
-      ports.wsIn.send(JSON.stringify({data:message.data,timeStamp:message.timeStamp}));
+      ports.wsIn.send(message.data);
     };
 
     ports.wsOut.subscribe(function(msg) {

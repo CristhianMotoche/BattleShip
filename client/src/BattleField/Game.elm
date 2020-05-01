@@ -127,7 +127,13 @@ type Msg =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    WSIn str -> ({model | msg = str}, Cmd.none)
+    WSIn str ->
+      let
+          db = Debug.log "str == ?" <| str == "Ready"
+      in
+      if str == "Ready"
+         then ({model | theirPhase = Ready}, Cmd.none)
+         else ({model | msg = str}, Cmd.none)
     WSOut str -> (model, WS.wsOut str)
     WSError err -> ({model | msg = err}, redirectAfterShowError)
     RedirectError -> (model, Nav.load <| BR.toString BR.Sessions)

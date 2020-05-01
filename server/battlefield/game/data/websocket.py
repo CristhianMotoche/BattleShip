@@ -10,7 +10,7 @@ game = PintBlueprint("game", "game")
 async def broadcast(session_id, message):
     for websock in current_app.clients:
         if session_id == websock[0]:
-            await websock[1].send(b"New connection")
+            await websock[1].send(f"{message}")
 
 
 def collect_websocket(func):
@@ -42,6 +42,5 @@ async def ws(session_id):
         try:
             data = await websocket.receive()
         except asyncio.CancelledError:
-            print("Gone forever...")
             raise
-        await broadcast(session_id, f"echo {data}")
+        await broadcast(session_id, f"{data}")
