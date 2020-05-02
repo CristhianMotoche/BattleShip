@@ -40,7 +40,15 @@ phaseToText phase =
   case phase of
     PlacingShips -> "Placing ships..."
     Ready -> "Ready!"
-    Playing -> "Play!"
+    Playing -> "Playing"
+
+phaseFromString : String -> Maybe Phase
+phaseFromString str =
+  case str of
+    "Ready" -> Just Ready
+    "Playing" -> Just Playing
+    "PlacingShips" -> Just PlacingShips
+    _ -> Nothing
 
 placingErrorToText : PlacingError -> String
 placingErrorToText  err =
@@ -119,6 +127,7 @@ type Msg =
   | WSError String
   | SetShipHead Pos
   | SetShipTail Pos
+  | Play
   | RedirectError
 
 
@@ -128,18 +137,24 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     WSIn str ->
-      let
-          db = Debug.log "str == ?" <| str == "Ready"
-      in
-      if str == "Ready"
-         then ({model | theirPhase = Ready}, Cmd.none)
-         else ({model | msg = str}, Cmd.none)
+      case phaseFromString str of
+        (Just phase) -> ({model | theirPhase = phase}, Cmd.none)
+        _ -> ({model | msg = str}, Cmd.none)
+
     WSOut str -> (model, WS.wsOut str)
+
     WSError err -> ({model | msg = err}, redirectAfterShowError)
+
     RedirectError -> (model, Nav.load <| BR.toString BR.Sessions)
+
+    Play -> ({ model | ourPhase = Playing }, WS.wsOut "Playing")
+
     SetShipHead pos ->
-        ({ model | ourBoard = setShipHead pos model.ourBoard, headShip = Just pos},
-        Cmd.none)
+        ({ model |
+           ourBoard = setShipHead pos model.ourBoard,
+           headShip = Just pos
+         }, Cmd.none)
+
     SetShipTail pos ->
       case model.headShip of
         Just headPos ->
@@ -236,6 +251,11 @@ view model =
     , H.div [ HA.class "their-phase" ]
             [ H.strong [][ H.text "Their status:" ]
             , H.text <| phaseToText model.theirPhase
+            ]
+    , H.div [ HA.class "play-button"]
+            [ if model.ourPhase == Ready
+              then H.button [ HE.onClick Play ][H.text "Let's play!"]
+              else H.div [] []
             ]
     , case model.placingError of
       Nothing -> H.div [] []

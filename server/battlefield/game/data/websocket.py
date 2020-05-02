@@ -13,6 +13,12 @@ async def broadcast(session_id, message):
             await websock[1].send(f"{message}")
 
 
+async def send_to_others(session_id, message, ws_sender):
+    for ws in current_app.clients:
+        if session_id == ws[0] and ws[1] != ws_sender:
+            await ws[1].send (message)
+
+
 def collect_websocket(func):
     async def wrapper(session_id, *args, **kwargs):
         if (
@@ -43,4 +49,4 @@ async def ws(session_id):
             data = await websocket.receive()
         except asyncio.CancelledError:
             raise
-        await broadcast(session_id, f"{data}")
+        await send_to_others(session_id, f"{data}", websocket._get_current_object())
