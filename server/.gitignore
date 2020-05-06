@@ -2,3 +2,4 @@ __pycache__/
 *.py[cod]
 db.*
 battlefield.egg-info/
+.mypy_cache/

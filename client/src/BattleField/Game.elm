@@ -28,7 +28,10 @@ type alias Model =
   , tailShip : Maybe Pos
   , ourPhase : Phase
   , theirPhase : Phase
+  , turn : Turn
   }
+
+type Turn = Ours | Theirs | None
 
 type PlacingError =
   TooLarge | TooSmall | NotInAxis | AlreadyUsed
@@ -106,6 +109,7 @@ init key sessionId =
    , tailShip = Nothing
    , ourPhase = PlacingShips
    , theirPhase = PlacingShips
+   , turn = None
    }
   , WS.wsConnect (BR.wsURL <| BR.Session sessionId)
   )
