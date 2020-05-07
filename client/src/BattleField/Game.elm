@@ -53,6 +53,20 @@ phaseFromString str =
     "PlacingShips" -> Just PlacingShips
     _ -> Nothing
 
+turnFromStr : String -> Maybe Turn
+turnFromStr str =
+  case str of
+    "Ours" -> Just Ours
+    "Theirs" -> Just Theirs
+    _ -> Nothing
+
+turnToString : Turn -> String
+turnToString turn =
+  case turn of
+    Ours -> "Ours"
+    Theirs -> "Theirs"
+    None -> "Game hasn't started"
+
 placingErrorToText : PlacingError -> String
 placingErrorToText  err =
   case err of
@@ -141,8 +155,9 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     WSIn str ->
-      case phaseFromString str of
-        (Just phase) -> ({model | theirPhase = phase}, Cmd.none)
+      case (phaseFromString str, turnFromStr str) of
+        (Just phase, _) -> ({model | theirPhase = phase}, Cmd.none)
+        (_, Just yourTurn) -> ({model | turn = yourTurn}, Cmd.none)
         _ -> ({model | msg = str}, Cmd.none)
 
     WSOut str -> (model, WS.wsOut str)
@@ -247,7 +262,7 @@ view : Model -> H.Html Msg
 view model =
   H.div
     []
-    [ H.text model.msg
+    [ H.text <| turnToString model.turn
     , H.div [ HA.class "our-phase" ]
             [ H.strong [][ H.text "Your status:" ]
             , H.text <| phaseToText model.ourPhase
