@@ -1,24 +1,12 @@
-from typing import Any, NamedTuple, Optional
-
 import asyncio
+from typing import Any, Optional
 
-from quart import abort, websocket
-from quart import current_app
+from quart import abort, current_app, websocket
 from quart_openapi import PintBlueprint
 
+from battlefield.game.domain.entities import Player
+
 game = PintBlueprint("game", "game")
-
-
-class Player(NamedTuple):
-    session: int
-    websocket: Any
-    status: str = "PlacingShips"
-    turn: str = "None"
-
-    def __eq__(self, other):
-        return (
-            self.session == other.session and self.websocket == other.websocket
-        )
 
 
 async def broadcast(session_id, message):
@@ -60,7 +48,7 @@ def collect_websocket(func):
     return wrapper
 
 
-async def set_turn(session_id):
+async def set_turn(session_id: int) -> None:
     players = list(
         filter(
             lambda player: player.session == session_id
