@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import NamedTuple, Optional
 from enum import IntEnum, unique
 
@@ -20,3 +21,9 @@ class Player(NamedTuple):
     session: int
     status: PlayerPhase = PlayerPhase.PLACING
     turn: Optional[Turn] = None
+
+
+@dataclass
+class Game:
+    player_one: Player
+    player_two: Player
