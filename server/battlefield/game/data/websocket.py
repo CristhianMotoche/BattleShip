@@ -5,6 +5,9 @@ from quart import abort, current_app, websocket
 from quart_openapi import PintBlueprint
 
 from battlefield.game.domain.entities import Player
+from battlefield.game.domain.use_cases.responder import Responder
+from battlefield.game.domain.use_cases.updater import Updater
+from battlefield.game.domain.use_cases.game_status_getter import GameStatusGetter
 
 game = PintBlueprint("game", "game")
 
@@ -100,20 +103,10 @@ def update_turn(turn: str, session_id: int, ws: Any) -> None:
 async def ws(session_id):
     while True:
         try:
-            # FIXME:
-            # Change this to a set of phases:
-            # 1. Get ws data
-            # 2. Check if ready
-            # 3. Set turn
-            # 4. Send & Receive attack
-            # 5. Decide winner
             data = await websocket.receive()
-            update_status(data, session_id, websocket._get_current_object())
-            await set_turn(session_id)
-            await battle(session_id, websocket._get_current_object(), data)
+            current_game = GameStatusGetter(current_app.clients).perform()
+            update_resp = Updater(data, current_game).perform()
         except asyncio.CancelledError:
             raise
         else:
-            await send_to_others(
-                session_id, data, websocket._get_current_object()
-            )
+            Responder(update_resp).perform()
