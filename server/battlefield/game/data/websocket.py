@@ -7,7 +7,9 @@ from quart_openapi import PintBlueprint
 from battlefield.game.domain.entities import Player
 from battlefield.game.domain.use_cases.responder import Responder
 from battlefield.game.domain.use_cases.updater import Updater
-from battlefield.game.domain.use_cases.game_status_getter import GameStatusGetter
+from battlefield.game.domain.use_cases.game_status_getter import (
+    GameStatusGetter,
+)
 
 game = PintBlueprint("game", "game")
 
@@ -82,20 +84,6 @@ def look_up_player(session_id: int, ws: Any) -> Optional[Player]:
         ),
         None,
     )
-
-
-def update_status(data: str, session_id: int, ws: Any) -> None:
-    player = look_up_player(session_id, ws)
-    if player:
-        current_app.clients.remove(player)
-        current_app.clients.add(Player(session_id, ws, data))
-
-
-def update_turn(turn: str, session_id: int, ws: Any) -> None:
-    player = look_up_player(session_id, ws)
-    if player:
-        current_app.clients.remove(player)
-        current_app.clients.add(Player(session_id, ws, "Playing", turn))
 
 
 @game.websocket("/ws/session/<int:session_id>")

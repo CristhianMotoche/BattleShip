@@ -24,6 +24,6 @@ class Player(NamedTuple):
 
 
 @dataclass
-class Game:
+class GameState:
     player_one: Player
     player_two: Player

@@ -6,7 +6,7 @@ from typing import List
 class SessionRepository(ABC):
 
     @abstractmethod
-    def save(self, session: Session):
+    def save(self, session: Session) -> Session:
         pass
 
     @abstractmethod
