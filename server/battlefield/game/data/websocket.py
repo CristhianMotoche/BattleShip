@@ -1,10 +1,10 @@
 import asyncio
 from typing import Any, Optional
 
-from quart import abort, current_app, websocket
+from quart import Response, abort, current_app, websocket
 from quart_openapi import PintBlueprint
 
-from battlefield.game.domain.entities import Player
+from battlefield.game.domain.entities import PlayerAction, Player
 from battlefield.game.domain.use_cases.responder import Responder
 from battlefield.game.domain.use_cases.updater import Updater
 from battlefield.game.domain.use_cases.game_status_getter import (
@@ -88,13 +88,19 @@ def look_up_player(session_id: int, ws: Any) -> Optional[Player]:
 
 @game.websocket("/ws/session/<int:session_id>")
 @collect_websocket
-async def ws(session_id):
+async def ws(session_id) -> Response:
     while True:
         try:
+            player_id = id(websocket._get_current_object())
+            current_game = GameStatusGetter(
+                player_id, session_id, current_app.clients
+            ).perform()
+
             data = await websocket.receive()
-            current_game = GameStatusGetter(current_app.clients).perform()
-            update_resp = Updater(data, current_game).perform()
+            action = PlayerAction.from_str(data)
+
+            update_resp = Updater(action, data, current_game).perform()
         except asyncio.CancelledError:
             raise
         else:
-            Responder(update_resp).perform()
+            await Responder(update_resp).perform()

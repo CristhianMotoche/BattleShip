@@ -1,24 +1,73 @@
-from dataclasses import dataclass, field
-from typing import List
+from dataclasses import dataclass
+from typing import List, Optional
 
 from battlefield.game.domain.entities import GameState, Player
+
+
+class NotEnoughPlayers(Exception):
+    pass
 
 
 class MoreThanExpected(Exception):
     pass
 
 
+class PlayerNotFound(Exception):
+    pass
+
+
 @dataclass
 class GameStatusGetter:
-    players: List[Player] = field(default_factory=list)
+    player_id: int
+    session_id: int
+    players: List[Player]
+
+    MAX_PLAYERS = 2
 
     def perform(self) -> GameState:
-        if not self.players:
-            return GameState()
-        if len(self.players) == 1:
-            return GameState(player_one=self.players[0])
-        if len(self.players) == 2:
-            return GameState(
-                player_one=self.players[0], player_two=self.players[1]
+        if len(self.players) > self.MAX_PLAYERS:
+            raise MoreThanExpected
+
+        players_in_session = self.__look_up_in_session()
+
+        if not players_in_session:
+            raise NotEnoughPlayers
+
+        current_player = self.__look_up_first_player(players_in_session)
+        second_player = self.__look_up_second_player(players_in_session)
+
+        if not current_player:
+            raise PlayerNotFound
+
+        return GameState(current_player, second_player)
+
+    def __look_up_in_session(self) -> List[Player]:
+        return list(
+            filter(
+                lambda player: player.session == self.session_id, self.players
             )
-        raise MoreThanExpected()
+        )
+
+    def __look_up_first_player(
+        self, session_players: List[Player]
+    ) -> Optional[Player]:
+        return next(
+            (
+                player
+                for player in session_players
+                if player.id_ == self.player_id
+            ),
+            None,
+        )
+
+    def __look_up_second_player(
+        self, session_players: List[Player]
+    ) -> Optional[Player]:
+        return next(
+            (
+                player
+                for player in session_players
+                if player.id_ != self.player_id
+            ),
+            None,
+        )
