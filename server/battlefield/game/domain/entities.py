@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, NamedTuple, Optional
+from typing import Any, Dict, NamedTuple, Optional
 from enum import IntEnum, unique
 
 from quart.wrappers import Websocket
@@ -10,6 +10,7 @@ class PlayerPhase(IntEnum):
     PLACING = 1
     READY = 2
     PLAYING = 3
+    ATTACKING = 4
 
 
 @unique
@@ -29,6 +30,18 @@ class PlayerAction(IntEnum):
     def from_str(cls, string: str) -> Any:  # noqa
         return cls.PLACING
 
+    def is_placing(self) -> bool:
+        return self == self.PLACING
+
+    def is_ready(self) -> bool:
+        return self == self.READY
+
+    def is_playing(self) -> bool:
+        return self == self.PLAYING
+
+    def is_attacking(self) -> bool:
+        return self == self.ATTACKING
+
 
 class Player(NamedTuple):
     id_: int
@@ -37,8 +50,50 @@ class Player(NamedTuple):
     status: PlayerPhase = PlayerPhase.PLACING
     turn: Optional[Turn] = None
 
+    def set_placing(self) -> Any:
+        return self.__set_phase(PlayerPhase.PLACING)
+
+    def set_ready(self) -> Any:
+        return self.__set_phase(PlayerPhase.READY)
+
+    def set_playing(self) -> Any:
+        return self.__set_phase(PlayerPhase.PLAYING)
+
+    def set_attacking(self) -> Any:
+        return self.__set_phase(PlayerPhase.ATTACKING)
+
+    def __set_phase(self, phase: PlayerPhase) -> Any:
+        dict_: Dict["str", Any] = {
+            **self._asdict(),
+            "status": phase,
+        }
+        return Player(**dict_)
+
+
+@unique
+class GamePhase(IntEnum):
+    PLACING = 1
+    READY = 2
+    PLAYING = 3
+    ATTACKING = 4
+
+    def is_placing(self) -> bool:
+        return self == self.PLACING
+
+    def is_ready(self) -> bool:
+        return self == self.READY
+
+    def is_playing(self) -> bool:
+        return self == self.PLAYING
+
+    def is_attacking(self) -> bool:
+        return self == self.ATTACKING
+
 
 @dataclass
 class GameState:
     current_player: Player
     opponent_player: Optional[Player] = None
+
+    def get_status(self) -> GamePhase:
+        return GamePhase.PLACING

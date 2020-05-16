@@ -86,21 +86,32 @@ def look_up_player(session_id: int, ws: Any) -> Optional[Player]:
     )
 
 
+def update_player_in_list(updated_player: Player) -> None:
+    for idx, player in enumerate(current_app.clients):
+        if player.id_ == updated_player.id_:
+            current_app.clients[idx] = updated_player
+
+
 @game.websocket("/ws/session/<int:session_id>")
 @collect_websocket
 async def ws(session_id) -> Response:
     while True:
         try:
+            data = await websocket.receive()
+            action = PlayerAction.from_str(data)
+
             player_id = id(websocket._get_current_object())
             current_game = GameStatusGetter(
                 player_id, session_id, current_app.clients
             ).perform()
-
-            data = await websocket.receive()
-            action = PlayerAction.from_str(data)
-
-            update_resp = Updater(action, data, current_game).perform()
+            updated_player = Updater(
+                current_game.current_player,
+                action,
+                data,
+                current_game.get_status(),
+            ).perform()
+            update_player_in_list(updated_player)
         except asyncio.CancelledError:
             raise
         else:
-            await Responder(update_resp).perform()
+            await Responder(updated_player).perform()
