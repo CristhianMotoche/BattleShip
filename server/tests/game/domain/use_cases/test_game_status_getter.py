@@ -6,6 +6,7 @@ from battlefield.game.domain.use_cases.game_status_getter import (
     MoreThanExpected,
     NotEnoughPlayers,
     PlayerNotFound,
+    WaitingPlayer,
 )
 
 
@@ -18,10 +19,8 @@ class GameStatusGetterUnitTest(TestCase):
         self,
     ) -> None:
         p1 = Player(1, 1, None)
-        game = GameStatusGetter(1, 1, [p1]).perform()
-
-        assert game.current_player is p1
-        assert game.opponent_player is None
+        with self.assertRaises(WaitingPlayer):
+            GameStatusGetter(1, 1, [p1]).perform()
 
     def test_perform_raises_exception_when_two_players_join(self) -> None:
         p1 = Player(1, 1, None)

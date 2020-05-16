@@ -93,7 +93,7 @@ class GamePhase(IntEnum):
 @dataclass
 class GameState:
     current_player: Player
-    opponent_player: Optional[Player] = None
+    opponent_player: Player
 
     def get_status(self) -> GamePhase:
         return GamePhase.PLACING

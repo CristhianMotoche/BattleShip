@@ -5,7 +5,10 @@ from quart import Response, abort, current_app, websocket
 from quart_openapi import PintBlueprint
 
 from battlefield.game.domain.entities import PlayerAction, Player
-from battlefield.game.domain.use_cases.responder import Responder
+from battlefield.game.domain.use_cases.responder import (
+    Responder,
+    ResponderClient,
+)
 from battlefield.game.domain.use_cases.updater import Updater
 from battlefield.game.domain.use_cases.game_status_getter import (
     GameStatusGetter,
@@ -20,10 +23,10 @@ async def broadcast(session_id, message):
             await websock[1].send(f"{message}")
 
 
-async def send_to_others(session_id, message, ws_sender):
-    for ws in current_app.clients:
-        if session_id == ws[0] and ws[1] != ws_sender:
-            await ws[1].send(message)
+class WebsocketResponder(ResponderClient):
+    async def send_to(self, player: Player, msg: str) -> None:
+        if player.ws:
+            await player.ws.send(msg)
 
 
 def collect_websocket(func):
@@ -67,12 +70,12 @@ async def set_turn(session_id: int) -> None:
         await players[1].websocket.send("Theirs")
 
 
-async def battle(session_id, ws, data):
-    player = look_up_player(session_id, ws)
-    if player and player.turn == "Ours":
-        await send_to_others(session_id, data, ws)
-    else:
-        await ws.send("Is not your turn...")
+# async def battle(session_id, ws, data):
+#     player = look_up_player(session_id, ws)
+#     if player and player.turn == "Ours":
+#         await send_to_others(session_id, data, ws)
+#     else:
+#         await ws.send("Is not your turn...")
 
 
 def look_up_player(session_id: int, ws: Any) -> Optional[Player]:
@@ -114,4 +117,9 @@ async def ws(session_id) -> Response:
         except asyncio.CancelledError:
             raise
         else:
-            await Responder(updated_player).perform()
+            Responder(
+                action,
+                updated_player.status,
+                current_game,
+                WebsocketResponder(),
+            ).perform()

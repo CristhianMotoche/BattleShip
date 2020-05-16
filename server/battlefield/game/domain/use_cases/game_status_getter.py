@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
 from battlefield.game.domain.entities import GameState, Player
 
@@ -13,6 +13,10 @@ class MoreThanExpected(Exception):
 
 
 class PlayerNotFound(Exception):
+    pass
+
+
+class WaitingPlayer(Exception):
     pass
 
 
@@ -36,9 +40,6 @@ class GameStatusGetter:
         current_player = self.__look_up_first_player(players_in_session)
         second_player = self.__look_up_second_player(players_in_session)
 
-        if not current_player:
-            raise PlayerNotFound
-
         return GameState(current_player, second_player)
 
     def __look_up_in_session(self) -> List[Player]:
@@ -50,8 +51,8 @@ class GameStatusGetter:
 
     def __look_up_first_player(
         self, session_players: List[Player]
-    ) -> Optional[Player]:
-        return next(
+    ) -> Player:
+        player = next(
             (
                 player
                 for player in session_players
@@ -59,11 +60,14 @@ class GameStatusGetter:
             ),
             None,
         )
+        if not player:
+            raise PlayerNotFound()
+        return player
 
     def __look_up_second_player(
         self, session_players: List[Player]
-    ) -> Optional[Player]:
-        return next(
+    ) -> Player:
+        player = next(
             (
                 player
                 for player in session_players
@@ -71,3 +75,6 @@ class GameStatusGetter:
             ),
             None,
         )
+        if not player:
+            raise WaitingPlayer()
+        return player
