@@ -1,5 +1,6 @@
 import abc
 from dataclasses import dataclass
+from typing import Any
 
 from battlefield.game.domain.entities import (
     Player,
@@ -11,7 +12,7 @@ from battlefield.game.domain.entities import (
 
 class ResponderClient(abc.ABC):
     @abc.abstractmethod
-    def send_to(self, other: Player, message: str) -> None:
+    def send_to(self, other: Player, message: str) -> Any:
         pass
 
 
@@ -22,6 +23,6 @@ class Responder:
     game: GameState
     client: ResponderClient
 
-    def perform(self) -> None:
+    def perform(self) -> Any:
         if self.action.is_placing():
-            self.client.send_to(self.game.opponent_player, "FOO")
+            return self.client.send_to(self.game.opponent_player, "FOO")

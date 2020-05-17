@@ -24,32 +24,30 @@ async def broadcast(session_id, message):
 
 
 class WebsocketResponder(ResponderClient):
-    async def send_to(self, player: Player, msg: str) -> None:
+    def send_to(self, player: Player, msg: str) -> Any:
         if player.ws:
-            await player.ws.send(msg)
+            return player.ws.send(msg)
 
 
 def collect_websocket(func):
     async def wrapper(session_id, *args, **kwargs):
         if (
-            len(
-                list(
-                    filter(
-                        lambda ws: ws.session == session_id,
-                        current_app.clients,
-                    )
+            sum(
+                1
+                for _ in filter(
+                    lambda player: player.session == session_id,
+                    current_app.clients,
                 )
             )
             > 1
         ):
             abort(403)
-        current_app.clients.add(
-            Player(session_id, websocket._get_current_object())
-        )
+        ws = websocket._get_current_object()
+        current_app.clients.add(Player(id(ws), session_id, ws,))
         try:
             return await func(session_id, *args, **kwargs)
         finally:
-            player = look_up_player(session_id, ws)
+            player = look_up_player(id(ws))
             if player:
                 current_app.clients.remove(player)
 
@@ -70,29 +68,15 @@ async def set_turn(session_id: int) -> None:
         await players[1].websocket.send("Theirs")
 
 
-# async def battle(session_id, ws, data):
-#     player = look_up_player(session_id, ws)
-#     if player and player.turn == "Ours":
-#         await send_to_others(session_id, data, ws)
-#     else:
-#         await ws.send("Is not your turn...")
-
-
-def look_up_player(session_id: int, ws: Any) -> Optional[Player]:
+def look_up_player(id_: int) -> Optional[Player]:
     return next(
-        (
-            player
-            for player in current_app.clients
-            if player.session == session_id and player.websocket == ws
-        ),
-        None,
+        (player for player in current_app.clients if player.id_ == id_), None,
     )
 
 
-def update_player_in_list(updated_player: Player) -> None:
-    for idx, player in enumerate(current_app.clients):
-        if player.id_ == updated_player.id_:
-            current_app.clients[idx] = updated_player
+def update_player_in_list(old_player: Player, updated_player: Player) -> None:
+    current_app.clients.remove(old_player)
+    current_app.clients.add(updated_player)
 
 
 @game.websocket("/ws/session/<int:session_id>")
@@ -113,13 +97,14 @@ async def ws(session_id) -> Response:
                 data,
                 current_game.get_status(),
             ).perform()
-            update_player_in_list(updated_player)
+            update_player_in_list(current_game.current_player, updated_player)
         except asyncio.CancelledError:
             raise
         else:
-            Responder(
+            response = Responder(
                 action,
                 updated_player.status,
                 current_game,
                 WebsocketResponder(),
             ).perform()
+            await response
