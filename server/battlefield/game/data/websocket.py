@@ -98,6 +98,7 @@ async def ws(session_id) -> Response:
                 current_game.get_status(),
             ).perform()
             update_player_in_list(current_game.current_player, updated_player)
+            print(action)
         except asyncio.CancelledError:
             raise
         else:

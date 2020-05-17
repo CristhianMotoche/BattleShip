@@ -25,4 +25,8 @@ class Responder:
 
     def perform(self) -> Any:
         if self.action.is_placing():
-            return self.client.send_to(self.game.opponent_player, "FOO")
+            return self.client.send_to(self.game.opponent_player, "Placing")
+        elif self.action.is_ready():
+            return self.client.send_to(self.game.opponent_player, "Ready")
+        elif self.action.is_playing():
+            return self.client.send_to(self.game.opponent_player, "Playing")

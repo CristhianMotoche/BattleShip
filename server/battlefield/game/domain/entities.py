@@ -28,7 +28,12 @@ class PlayerAction(IntEnum):
 
     @classmethod
     def from_str(cls, string: str) -> Any:  # noqa
-        return cls.PLACING
+        if string == "Placing":
+            return cls.PLACING
+        elif string == "Ready":
+            return cls.READY
+        elif string == "Playing":
+            return cls.PLAYING
 
     def is_placing(self) -> bool:
         return self == self.PLACING
