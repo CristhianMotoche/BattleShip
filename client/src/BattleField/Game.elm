@@ -172,7 +172,7 @@ update msg model =
         ({ model |
            ourBoard = setShipHead pos model.ourBoard,
            headShip = Just pos
-         }, Cmd.none)
+         }, WS.wsOut "Placing")
 
     SetShipTail pos ->
       case model.headShip of
