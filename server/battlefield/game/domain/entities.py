@@ -25,6 +25,7 @@ class PlayerAction(IntEnum):
     READY = 2
     PLAYING = 3
     ATTACKING = 4
+    UNKNOWN = 5
 
     @classmethod
     def from_str(cls, string: str) -> Any:  # noqa
@@ -34,6 +35,8 @@ class PlayerAction(IntEnum):
             return cls.READY
         elif string == "Playing":
             return cls.PLAYING
+        else:
+            return cls.UNKNOWN
 
     def is_placing(self) -> bool:
         return self == self.PLACING

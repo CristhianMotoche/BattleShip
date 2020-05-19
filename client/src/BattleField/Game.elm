@@ -20,7 +20,7 @@ import BattleField.Route as BR
 type alias Model =
   { key : Nav.Key
   , title : Maybe String
-  , msg : String
+  , msg : Maybe String
   , placingError : Maybe PlacingError
   , ourBoard : Board
   , theirBoard : Board
@@ -115,7 +115,7 @@ init : Nav.Key -> Int -> (Model, Cmd Msg)
 init key sessionId =
   ({ key = key
    , title = Just "Game"
-   , msg = "Waiting..."
+   , msg = Nothing
    , placingError = Nothing
    , ourBoard = initBoard
    , theirBoard = initBoard
@@ -158,11 +158,11 @@ update msg model =
       case (phaseFromString str, turnFromStr str) of
         (Just phase, _) -> ({model | theirPhase = phase}, Cmd.none)
         (_, Just yourTurn) -> ({model | turn = yourTurn}, Cmd.none)
-        _ -> ({model | msg = str}, Cmd.none)
+        _ -> ({model | msg = Just str}, Cmd.none)
 
     WSOut str -> (model, WS.wsOut str)
 
-    WSError err -> ({model | msg = err}, redirectAfterShowError)
+    WSError err -> ({model | msg = Just err}, redirectAfterShowError)
 
     RedirectError -> (model, Nav.load <| BR.toString BR.Sessions)
 
@@ -265,7 +265,11 @@ view model =
     [ H.text <| turnToString model.turn
     , H.div [ HA.class "our-phase" ]
             [ H.strong [][ H.text "Your status:" ]
-            , H.text <| phaseToText model.ourPhase
+            , H.text
+                <| phaseToText model.ourPhase ++
+                   case model.msg of
+                     Just str -> "(" ++ str ++ ")"
+                     Nothing -> ""
             ]
     , H.div [ HA.class "their-phase" ]
             [ H.strong [][ H.text "Their status:" ]

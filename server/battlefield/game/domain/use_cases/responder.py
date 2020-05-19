@@ -30,3 +30,4 @@ class Responder:
             return self.client.send_to(self.game.opponent_player, "Ready")
         elif self.action.is_playing():
             return self.client.send_to(self.game.opponent_player, "Playing")
+        return self.client.send_to(self.game.current_player, "Invalid action")
