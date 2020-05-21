@@ -5,7 +5,6 @@ from typing import Any
 from battlefield.game.domain.entities import (
     Player,
     PlayerAction,
-    PlayerPhase,
     GameState,
 )
 
@@ -19,7 +18,6 @@ class ResponderClient(abc.ABC):
 @dataclass
 class Responder:
     action: PlayerAction
-    player_status: PlayerPhase
     game: GameState
     client: ResponderClient
 

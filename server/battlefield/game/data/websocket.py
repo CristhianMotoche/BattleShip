@@ -103,7 +103,6 @@ async def ws(session_id) -> Response:
         else:
             response = Responder(
                 action,
-                updated_player.status,
                 current_game,
                 WebsocketResponder(),
             ).perform()
