@@ -1,4 +1,4 @@
-module BattleField.Game exposing (Model, Msg, getKey, init, view, update, subs)
+module BattleField.Game exposing (Model, Msg, getKey, init, view, update, subs, posToStr)
 
 import Html as H
 import Html.Events as HE
@@ -76,7 +76,12 @@ placingErrorToText  err =
     AlreadyUsed -> "Position already used"
 
 type alias Board = List (List Square)
+
 type alias Pos = (String, Int)
+
+posToStr : Pos -> String
+posToStr (str, int) = str ++ String.fromInt int
+
 type alias Square =
   { pos : Pos
   , usedByShip : Bool
@@ -145,6 +150,7 @@ type Msg =
   | WSError String
   | SetShipHead Pos
   | SetShipTail Pos
+  | SendAttack Pos
   | Play
   | RedirectError
 
@@ -173,6 +179,8 @@ update msg model =
            ourBoard = setShipHead pos model.ourBoard,
            headShip = Just pos
          }, WS.wsOut "Placing")
+
+    SendAttack pos -> (model, WS.wsOut <| posToStr pos)
 
     SetShipTail pos ->
       case model.headShip of
