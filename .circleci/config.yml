@@ -20,8 +20,8 @@ jobs:
       - run: npm install elm@latest-0.19.1
       - run: echo "export PATH=$PWD/node_modules/.bin:$PATH" >> $BASH_ENV
       - run: |
-          ls
-          ls generated/src
+          ls -l generated/
+          ls -l generated/src
           npm run test
 
   backend:
