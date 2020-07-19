@@ -12,7 +12,7 @@ jobs:
           working_directory: ~/project/
           name: "Run openapi-generator-cli to generate the Elm client"
           command: |
-            docker create -v /tmp --name openapi openapitools/openapi-generator-cli:latest
+            docker create -v /tmp --name openapi openapitools/openapi-generator-cli:v5.0.0-beta
             docker cp api.json openapi:/tmp
             docker run --volumes-from openapi openapitools/openapi-generator-cli generate -i /tmp/api.json -g elm -o /tmp/client/generated/
             docker cp openapi:/tmp/client/generated ./client/

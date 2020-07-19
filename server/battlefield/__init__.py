@@ -18,7 +18,7 @@ BASE_MODEL_SCHEMA = {
             "Session": {
                 "type": "object",
                 "properties": {
-                    "id": {"type": "int"},
+                    "id": {"type": "integer"},
                     "key": {"type": "string"},
                 },
                 "required": ["id", "key"],

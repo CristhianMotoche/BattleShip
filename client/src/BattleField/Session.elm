@@ -2,7 +2,7 @@ module BattleField.Session exposing (SessionModel, Model, Status(..), Msg, init,
 
 
 import Result
-import Data.Session as DS
+import Api.Data as DS
 import Http
 import Html as H
 import Html.Attributes as HA
@@ -13,7 +13,8 @@ import Process as P
 
 import BattleField.Route as BR
 
-import Request.Default as R
+import Api
+import Api.Request.Default as R
 
 
 type alias Session = DS.Session
@@ -72,17 +73,13 @@ gameUrlById : Int -> String
 gameUrlById id = BR.toString <| BR.Session id
 
 loadSessions : Cmd Msg
-loadSessions = R.getSessions {
-    onSend = handleResp
-  }
+loadSessions =
+  Api.send handleResp R.getSessions
 
 
 createNewSession : Cmd Msg
 createNewSession =
-  let debug = Debug.log "HERE"
-  in R.postSessions {
-    onSend = handleNew
-  }
+  Api.send handleNew R.postSessions
 
 handleResp : Result Http.Error (List DS.Session) -> Msg
 handleResp resp =

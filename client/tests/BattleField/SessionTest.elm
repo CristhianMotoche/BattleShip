@@ -9,7 +9,7 @@ import Random
 import Shrink
 import Expect
 
-import Data.Session as DS
+import Api.Data as DS
 
 import BattleField.Session exposing (SessionModel, Status(..), viewSessionModel)
 

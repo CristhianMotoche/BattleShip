@@ -33,23 +33,6 @@
             }
         },
         "/sessions": {
-            "post": {
-                "description": "",
-                "tags": [],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "Session"
-                                }
-                            }
-                        }
-                    }
-                },
-                "operationId": "post_sessions"
-            },
             "get": {
                 "description": "",
                 "tags": [],
@@ -69,6 +52,23 @@
                     }
                 },
                 "operationId": "get_sessions"
+            },
+            "post": {
+                "description": "",
+                "tags": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "Session"
+                                }
+                            }
+                        }
+                    }
+                },
+                "operationId": "post_sessions"
             }
         }
     },
@@ -78,7 +78,7 @@
                 "type": "object",
                 "properties": {
                     "id": {
-                        "type": "int"
+                        "type": "integer"
                     },
                     "key": {
                         "type": "string"
