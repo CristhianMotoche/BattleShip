@@ -28,7 +28,7 @@ BASE_MODEL_SCHEMA = {
 }
 
 
-def create_app(config):
+def create_app(config) -> Pint:
     load_dotenv(verbose=True)
 
     app = Pint(
