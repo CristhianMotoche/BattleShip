@@ -1,3 +1,4 @@
+import abc
 from dataclasses import dataclass
 from typing import List
 
@@ -20,11 +21,16 @@ class WaitingPlayer(Exception):
     pass
 
 
+class GetterRepository(abc.ABC):
+    @abc.abstractmethod
+    def lookup_for_layers(self, session_id) -> List[Player]:
+        pass
+
+
 @dataclass
-class GameStatusGetter:
-    player_id: int
+class StatusGetter:
     session_id: int
-    players: List[Player]
+    _repo: GetterRepository
 
     MAX_PLAYERS = 2
 

@@ -10,9 +10,7 @@ from battlefield.game.domain.use_cases.responder import (
     ResponderClient,
 )
 from battlefield.game.domain.use_cases.updater import Updater
-from battlefield.game.domain.use_cases.game_status_getter import (
-    GameStatusGetter,
-)
+from battlefield.game.domain.use_cases.game_status_getter import StatusGetter
 
 game = PintBlueprint("game", "game")
 
@@ -88,7 +86,7 @@ async def ws(session_id) -> Response:
             action = PlayerAction.from_str(data)
 
             player_id = id(websocket._get_current_object())
-            current_game = GameStatusGetter(
+            current_game = StatusGetter(
                 player_id, session_id, current_app.clients
             ).perform()
             updated_player = Updater(
