@@ -1,5 +1,6 @@
 import asyncio
-from typing import Any, Optional
+from dataclasses import dataclass
+from typing import Any, Optional, List
 
 from quart import Response, abort, current_app, websocket
 from quart_openapi import PintBlueprint
@@ -10,7 +11,10 @@ from battlefield.game.domain.use_cases.responder import (
     ResponderClient,
 )
 from battlefield.game.domain.use_cases.updater import Updater
-from battlefield.game.domain.use_cases.game_status_getter import StatusGetter
+from battlefield.game.domain.use_cases.game_status_getter import (
+    GetterRepository,
+    StatusGetter,
+)
 
 game = PintBlueprint("game", "game")
 
@@ -77,6 +81,14 @@ def update_player_in_list(old_player: Player, updated_player: Player) -> None:
     current_app.clients.add(updated_player)
 
 
+@dataclass(frozen=True)
+class SessionRepo(GetterRepository):
+    players: List[Player]
+
+    def lookup_for_players(self, session_id: int) -> List[Player]:
+        return [p for p in self.players if p.session == session_id]
+
+
 @game.websocket("/ws/session/<int:session_id>")
 @collect_websocket
 async def ws(session_id) -> Response:
@@ -87,7 +99,7 @@ async def ws(session_id) -> Response:
 
             player_id = id(websocket._get_current_object())
             current_game = StatusGetter(
-                player_id, session_id, current_app.clients
+                session_id, SessionRepo(current_app.clients)
             ).perform()
             updated_player = Updater(
                 current_game.current_player,
@@ -100,8 +112,6 @@ async def ws(session_id) -> Response:
             raise
         else:
             response = Responder(
-                action,
-                current_game,
-                WebsocketResponder(),
+                action, current_game, WebsocketResponder(),
             ).perform()
             await response

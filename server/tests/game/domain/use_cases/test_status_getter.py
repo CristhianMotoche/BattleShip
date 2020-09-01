@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import Mock, create_autospec
+from unittest.mock import create_autospec
 
 from battlefield.game.domain.entities import Player
 from battlefield.game.domain.use_cases.game_status_getter import (
@@ -7,8 +7,6 @@ from battlefield.game.domain.use_cases.game_status_getter import (
     GetterRepository,
     MoreThanExpected,
     NotEnoughPlayers,
-    PlayerNotFound,
-    WaitingPlayer,
 )
 
 
@@ -24,27 +22,21 @@ class GameStatusGetterUnitTest(TestCase):
         self,
     ) -> None:
         p1 = Player(1, 1, None)
-        self.mock_repo.lookup_for_layers.return_
-        with self.assertRaises(WaitingPlayer):
-            StatusGetter(1, 1, [p1]).perform()
 
-    def test_perform_raises_exception_when_two_players_join(self) -> None:
+        self.mock_repo.lookup_for_players.return_value = [p1]
+
+        with self.assertRaises(NotEnoughPlayers):
+            StatusGetter(1, self.mock_repo).perform()
+
+    def test_perform_returns_game_status_with_players(self) -> None:
         p1 = Player(1, 1, None)
         p2 = Player(2, 1, None)
+        self.mock_repo.lookup_for_players.return_value = [p1, p2]
 
-        game = StatusGetter(1, 1, [p1, p2]).perform()
+        game = StatusGetter(1, self.mock_repo).perform()
 
         assert game.current_player is p1
         assert game.opponent_player is p2
-
-    def test_perform_raises_exception_when_current_player_not_found(
-        self,
-    ) -> None:
-        p1 = Player(1, 1, None)
-        p2 = Player(2, 1, None)
-
-        with self.assertRaises(PlayerNotFound):
-            StatusGetter(123, 1, [p1, p2]).perform()
 
     def test_perform_raises_exception_when_more_than_expected(
         self,
@@ -52,6 +44,7 @@ class GameStatusGetterUnitTest(TestCase):
         p1 = Player(1, 1, None)
         p2 = Player(2, 1, None)
         p3 = Player(3, 1, None)
+        self.mock_repo.lookup_for_players.return_value = [p1, p2, p3]
 
         with self.assertRaises(MoreThanExpected):
-            StatusGetter(1, 1, [p1, p2, p3]).perform()
+            StatusGetter(1, self.mock_repo).perform()
