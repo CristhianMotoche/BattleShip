@@ -168,7 +168,11 @@ update msg model =
 
     WSOut str -> (model, WS.wsOut str)
 
-    WSError err -> ({model | msg = Just err}, redirectAfterShowError)
+    WSError err ->
+      let
+          foo = Debug.log "WTF?" err
+      in
+         ({model | msg = Just err}, redirectAfterShowError)
 
     RedirectError -> (model, Nav.load <| BR.toString BR.Sessions)
 

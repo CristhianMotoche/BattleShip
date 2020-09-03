@@ -4,6 +4,8 @@ export function regiterToPorts(ports) {
 
     ws.onerror = function (event) {
       ports.wsError.send("ERROR");
+      console.log("ERROR!");
+      ws.close();
     }
 
     ws.onmessage = function(message) {

@@ -1,4 +1,6 @@
 import asyncio
+import logging
+import sys
 from dataclasses import dataclass
 from typing import Any, Optional, List
 
@@ -15,6 +17,16 @@ from battlefield.game.domain.use_cases.game_status_getter import (
     GetterRepository,
     StatusGetter,
 )
+
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter(
+    "[%(asctime)s][%(levelname)s] %(name)s: %(message)s"
+)
+consoleHandler = logging.StreamHandler(sys.stdout)
+consoleHandler.setFormatter(formatter)
+logger.setLevel(logging.INFO)
+logger.addHandler(consoleHandler)
+
 
 game = PintBlueprint("game", "game")
 
@@ -33,19 +45,18 @@ class WebsocketResponder(ResponderClient):
 
 def collect_websocket(func):
     async def wrapper(session_id, *args, **kwargs):
-        if (
-            sum(
-                1
-                for _ in filter(
-                    lambda player: player.session == session_id,
-                    current_app.clients,
-                )
-            )
-            > 1
-        ):
+        total_players_in_session = len(
+            [
+                player
+                for player in current_app.clients
+                if player.session == session_id
+            ]
+        )
+        if total_players_in_session > 2:
             abort(403)
+#            raise asyncio.CancelledError
         ws = websocket._get_current_object()
-        current_app.clients.add(Player(id(ws), session_id, ws,))
+        current_app.clients.add(Player(id(ws), session_id, ws))
         try:
             return await func(session_id, *args, **kwargs)
         finally:
@@ -93,11 +104,12 @@ class SessionRepo(GetterRepository):
 @collect_websocket
 async def ws(session_id) -> Response:
     while True:
+        player_id = id(websocket._get_current_object())
+        logger.info(f"Player {player_id} connected to session {session_id}")
         try:
             data = await websocket.receive()
             action = PlayerAction.from_str(data)
 
-            player_id = id(websocket._get_current_object())
             current_game = StatusGetter(
                 session_id, SessionRepo(current_app.clients)
             ).perform()
@@ -109,6 +121,9 @@ async def ws(session_id) -> Response:
             ).perform()
             update_player_in_list(current_game.current_player, updated_player)
         except asyncio.CancelledError:
+            logger.info(
+                f"Player {player_id} disconnected from session {session_id}"
+            )
             raise
         else:
             response = Responder(

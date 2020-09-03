@@ -78,7 +78,7 @@ update msg model =
     (URLRequest urlRequest, _) ->
       case urlRequest of
         Browser.Internal url ->
-          ( model, Nav.pushUrl (getKey model) (Url.toString url) )
+          ( model, Nav.load (Url.toString url) )
 
         Browser.External href ->
           ( model, Nav.load href )
