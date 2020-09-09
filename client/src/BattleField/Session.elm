@@ -126,8 +126,8 @@ viewSessions sessions =
 viewSession : Session -> H.Html Msg
 viewSession session =
   H.div [ HA.class "session" ]
-        [ H.a [ HA.href <| gameUrlById session.id, HA.class "button" ]
-              [ H.text ("Join " ++ session.key) ]
+        [ H.button [ HE.onClick (NewCreated session), HA.class "button" ]
+                   [ H.text ("Join " ++ session.key) ]
         ]
 
 getKey : Model -> Nav.Key

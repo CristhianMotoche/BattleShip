@@ -1,5 +1,8 @@
 import asyncio
-from typing import Any, Optional
+import logging
+import sys
+from dataclasses import dataclass
+from typing import Any, Optional, List
 
 from quart import Response, abort, current_app, websocket
 from quart_openapi import PintBlueprint
@@ -11,8 +14,19 @@ from battlefield.game.domain.use_cases.responder import (
 )
 from battlefield.game.domain.use_cases.updater import Updater
 from battlefield.game.domain.use_cases.game_status_getter import (
-    GameStatusGetter,
+    GetterRepository,
+    StatusGetter,
 )
+
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter(
+    "[%(asctime)s][%(levelname)s] %(name)s: %(message)s"
+)
+consoleHandler = logging.StreamHandler(sys.stdout)
+consoleHandler.setFormatter(formatter)
+logger.setLevel(logging.INFO)
+logger.addHandler(consoleHandler)
+
 
 game = PintBlueprint("game", "game")
 
@@ -31,19 +45,17 @@ class WebsocketResponder(ResponderClient):
 
 def collect_websocket(func):
     async def wrapper(session_id, *args, **kwargs):
-        if (
-            sum(
-                1
-                for _ in filter(
-                    lambda player: player.session == session_id,
-                    current_app.clients,
-                )
-            )
-            > 1
-        ):
+        total_players_in_session = len(
+            [
+                player
+                for player in current_app.clients
+                if player.session == session_id
+            ]
+        )
+        if total_players_in_session > 2:
             abort(403)
         ws = websocket._get_current_object()
-        current_app.clients.add(Player(id(ws), session_id, ws,))
+        current_app.clients.add(Player(id(ws), session_id, ws))
         try:
             return await func(session_id, *args, **kwargs)
         finally:
@@ -79,17 +91,26 @@ def update_player_in_list(old_player: Player, updated_player: Player) -> None:
     current_app.clients.add(updated_player)
 
 
+@dataclass(frozen=True)
+class SessionRepo(GetterRepository):
+    players: List[Player]
+
+    def lookup_for_players(self, session_id: int) -> List[Player]:
+        return [p for p in self.players if p.session == session_id]
+
+
 @game.websocket("/ws/session/<int:session_id>")
 @collect_websocket
 async def ws(session_id) -> Response:
     while True:
+        player_id = id(websocket._get_current_object())
+        logger.info(f"Player {player_id} connected to session {session_id}")
         try:
             data = await websocket.receive()
             action = PlayerAction.from_str(data)
 
-            player_id = id(websocket._get_current_object())
-            current_game = GameStatusGetter(
-                player_id, session_id, current_app.clients
+            current_game = StatusGetter(
+                session_id, SessionRepo(current_app.clients)
             ).perform()
             updated_player = Updater(
                 current_game.current_player,
@@ -99,11 +120,12 @@ async def ws(session_id) -> Response:
             ).perform()
             update_player_in_list(current_game.current_player, updated_player)
         except asyncio.CancelledError:
+            logger.info(
+                f"Player {player_id} disconnected from session {session_id}"
+            )
             raise
         else:
             response = Responder(
-                action,
-                current_game,
-                WebsocketResponder(),
+                action, current_game, WebsocketResponder(),
             ).perform()
             await response
