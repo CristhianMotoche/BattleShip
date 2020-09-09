@@ -54,7 +54,6 @@ def collect_websocket(func):
         )
         if total_players_in_session > 2:
             abort(403)
-#            raise asyncio.CancelledError
         ws = websocket._get_current_object()
         current_app.clients.add(Player(id(ws), session_id, ws))
         try:
