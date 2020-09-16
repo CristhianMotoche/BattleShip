@@ -39,7 +39,7 @@ def create_app(config) -> Pint:
 
     app.config.from_envvar("CONFIG_FILE")
 
-    app.clients = set()
+    app.games = dict()
 
     @app.before_serving
     async def init_orm():

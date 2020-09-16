@@ -2,7 +2,7 @@ import asyncio
 import logging
 import sys
 from dataclasses import dataclass
-from typing import Any, Optional, List
+from typing import Any, List
 
 from quart import Response, abort, current_app, websocket
 from quart_openapi import PintBlueprint
@@ -31,12 +31,6 @@ logger.addHandler(consoleHandler)
 game = PintBlueprint("game", "game")
 
 
-async def broadcast(session_id, message):
-    for websock in current_app.clients:
-        if session_id == websock[0]:
-            await websock[1].send(f"{message}")
-
-
 class WebsocketResponder(ResponderClient):
     def send_to(self, player: Player, msg: str) -> Any:
         if player.ws:
@@ -45,50 +39,31 @@ class WebsocketResponder(ResponderClient):
 
 def collect_websocket(func):
     async def wrapper(session_id, *args, **kwargs):
-        total_players_in_session = len(
-            [
-                player
-                for player in current_app.clients
-                if player.session == session_id
-            ]
-        )
-        if total_players_in_session > 2:
+        if session_id not in current_app.games:
+            current_app.games[session_id] = []
+
+        cur_game = current_app.games[session_id]
+
+        if len(cur_game) > 2:
             abort(403)
+
         ws = websocket._get_current_object()
-        current_app.clients.add(Player(id(ws), session_id, ws))
+        player = Player(id(ws), session_id, ws)
+        cur_game.append(player)
+
         try:
             return await func(session_id, *args, **kwargs)
         finally:
-            player = look_up_player(id(ws))
-            if player:
-                current_app.clients.remove(player)
+            cur_game.remove(player)
 
     return wrapper
 
 
-async def set_turn(session_id: int) -> None:
-    players = list(
-        filter(
-            lambda player: player.session == session_id
-            and player.status == "Playing"
-            and player.turn == "None",
-            current_app.clients,
-        )
-    )
-    if len(players) == 2:
-        await players[0].websocket.send("Ours")
-        await players[1].websocket.send("Theirs")
-
-
-def look_up_player(id_: int) -> Optional[Player]:
-    return next(
-        (player for player in current_app.clients if player.id_ == id_), None,
-    )
-
-
-def update_player_in_list(old_player: Player, updated_player: Player) -> None:
-    current_app.clients.remove(old_player)
-    current_app.clients.add(updated_player)
+def update_player_in_list(
+    players: List[Player], old_player: Player, updated_player: Player
+) -> None:
+    players.remove(old_player)
+    players.append(updated_player)
 
 
 @dataclass(frozen=True)
@@ -105,12 +80,13 @@ async def ws(session_id) -> Response:
     while True:
         player_id = id(websocket._get_current_object())
         logger.info(f"Player {player_id} connected to session {session_id}")
+        players = current_app.games[session_id]
         try:
             data = await websocket.receive()
             action = PlayerAction.from_str(data)
 
             current_game = StatusGetter(
-                session_id, SessionRepo(current_app.clients)
+                session_id, SessionRepo(players)
             ).perform()
             updated_player = Updater(
                 current_game.current_player,
@@ -118,7 +94,9 @@ async def ws(session_id) -> Response:
                 data,
                 current_game.get_status(),
             ).perform()
-            update_player_in_list(current_game.current_player, updated_player)
+            update_player_in_list(
+                players, current_game.current_player, updated_player
+            )
         except asyncio.CancelledError:
             logger.info(
                 f"Player {player_id} disconnected from session {session_id}"
