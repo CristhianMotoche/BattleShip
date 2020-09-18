@@ -37,10 +37,25 @@ class WebsocketResponder(ResponderClient):
             return player.ws.send(msg)
 
 
+class Game:
+    def __init__(self, session_id: int) -> None:
+        self.session_id = session_id
+        self._players: List[Player] = []
+
+    def append(self, player: Player) -> None:
+        self._players.append(player)
+
+    def remove(self, player: Player) -> None:
+        self._players.remove(player)
+
+    def __len__(self) -> int:
+        return len(self._players)
+
+
 def collect_websocket(func):
     async def wrapper(session_id, *args, **kwargs):
         if session_id not in current_app.games:
-            current_app.games[session_id] = []
+            current_app.games[session_id] = Game(session_id)
 
         cur_game = current_app.games[session_id]
 
@@ -76,15 +91,17 @@ class SessionRepo(GetterRepository):
 
 @game.websocket("/ws/session/<int:session_id>")
 @collect_websocket
-async def ws(session_id) -> Response:
+async def ws(session_id: int) -> Response:
     while True:
-        player_id = id(websocket._get_current_object())
-        logger.info(f"Player {player_id} connected to session {session_id}")
-        players = current_app.games[session_id]
         try:
+            players = current_app.games[session_id]
+            player_id = id(websocket._get_current_object())
+            logger.info(
+                f"Player {player_id} connected to session {session_id}"
+            )
+
             data = await websocket.receive()
             action = PlayerAction.from_str(data)
-
             current_game = StatusGetter(
                 session_id, SessionRepo(players)
             ).perform()
@@ -97,13 +114,13 @@ async def ws(session_id) -> Response:
             update_player_in_list(
                 players, current_game.current_player, updated_player
             )
+            response = Responder(
+                action, current_game, WebsocketResponder(),
+            ).perform()
         except asyncio.CancelledError:
             logger.info(
                 f"Player {player_id} disconnected from session {session_id}"
             )
             raise
         else:
-            response = Responder(
-                action, current_game, WebsocketResponder(),
-            ).perform()
             await response
