@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from typing import Any, Dict, NamedTuple, Optional
 from enum import IntEnum, unique
+from typing import Any, Dict, List, NamedTuple, Optional
 
 from quart.wrappers import Websocket
 
@@ -105,3 +105,19 @@ class GameState:
 
     def get_status(self) -> GamePhase:
         return GamePhase.PLACING
+
+
+class Game:
+    def __init__(self, session_id: int) -> None:
+        self.session_id = session_id
+        self._players: List[Player] = []
+        self._turn = 0
+
+    def append(self, player: Player) -> None:
+        self._players.append(player)
+
+    def remove(self, player: Player) -> None:
+        self._players.remove(player)
+
+    def __len__(self) -> int:
+        return len(self._players)

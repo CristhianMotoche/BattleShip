@@ -2,12 +2,12 @@ import asyncio
 import logging
 import sys
 from dataclasses import dataclass
-from typing import Any, List
+from typing import Awaitable, Any, Callable, List
 
 from quart import Response, abort, current_app, websocket
 from quart_openapi import PintBlueprint
 
-from battlefield.game.domain.entities import PlayerAction, Player
+from battlefield.game.domain.entities import PlayerAction, Player, Game
 from battlefield.game.domain.use_cases.responder import (
     Responder,
     ResponderClient,
@@ -37,33 +37,19 @@ class WebsocketResponder(ResponderClient):
             return player.ws.send(msg)
 
 
-class Game:
-    def __init__(self, session_id: int) -> None:
-        self.session_id = session_id
-        self._players: List[Player] = []
-
-    def append(self, player: Player) -> None:
-        self._players.append(player)
-
-    def remove(self, player: Player) -> None:
-        self._players.remove(player)
-
-    def __len__(self) -> int:
-        return len(self._players)
-
-
-def collect_websocket(func):
-    async def wrapper(session_id, *args, **kwargs):
-        if session_id not in current_app.games:
-            current_app.games[session_id] = Game(session_id)
-
-        cur_game = current_app.games[session_id]
+def collect_websocket(
+    func: Callable[..., Awaitable[Any]]
+) -> Callable[..., Awaitable[Any]]:
+    async def wrapper(session_id: int, *args, **kwargs):
+        ws = websocket._get_current_object()
+        player = Player(id(ws), session_id, ws)
+        cur_game = current_app.games[session_id] = current_app.games.get(
+            session_id, Game(session_id)
+        )
 
         if len(cur_game) > 2:
             abort(403)
 
-        ws = websocket._get_current_object()
-        player = Player(id(ws), session_id, ws)
         cur_game.append(player)
 
         try:
@@ -86,7 +72,7 @@ class SessionRepo(GetterRepository):
     players: List[Player]
 
     def lookup_for_players(self, session_id: int) -> List[Player]:
-        return [p for p in self.players if p.session == session_id]
+        return self.players
 
 
 @game.websocket("/ws/session/<int:session_id>")
@@ -94,7 +80,7 @@ class SessionRepo(GetterRepository):
 async def ws(session_id: int) -> Response:
     while True:
         try:
-            players = current_app.games[session_id]
+            cur_game = current_app.games[session_id]
             player_id = id(websocket._get_current_object())
             logger.info(
                 f"Player {player_id} connected to session {session_id}"
@@ -103,7 +89,7 @@ async def ws(session_id: int) -> Response:
             data = await websocket.receive()
             action = PlayerAction.from_str(data)
             current_game = StatusGetter(
-                session_id, SessionRepo(players)
+                session_id, SessionRepo(cur_game._players)
             ).perform()
             updated_player = Updater(
                 current_game.current_player,
@@ -112,7 +98,7 @@ async def ws(session_id: int) -> Response:
                 current_game.get_status(),
             ).perform()
             update_player_in_list(
-                players, current_game.current_player, updated_player
+                cur_game._players, current_game.current_player, updated_player
             )
             response = Responder(
                 action, current_game, WebsocketResponder(),
