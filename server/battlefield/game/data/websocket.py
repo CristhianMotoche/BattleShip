@@ -8,15 +8,12 @@ from quart import Response, abort, current_app, websocket
 from quart_openapi import PintBlueprint
 
 from battlefield.game.domain.entities import PlayerAction, Player, Game
-from battlefield.game.domain.use_cases.responder import (
-    Responder,
-    ResponderClient,
-)
-from battlefield.game.domain.use_cases.updater import Updater
+from battlefield.game.domain.use_cases.play import Play
+from battlefield.game.domain.use_cases.responder import ResponderClient
 from battlefield.game.domain.use_cases.game_status_getter import (
     GetterRepository,
-    StatusGetter,
 )
+
 
 logger = logging.getLogger(__name__)
 formatter = logging.Formatter(
@@ -60,13 +57,6 @@ def collect_websocket(
     return wrapper
 
 
-def update_player_in_list(
-    players: List[Player], old_player: Player, updated_player: Player
-) -> None:
-    players.remove(old_player)
-    players.append(updated_player)
-
-
 @dataclass(frozen=True)
 class SessionRepo(GetterRepository):
     players: List[Player]
@@ -80,29 +70,27 @@ class SessionRepo(GetterRepository):
 async def ws(session_id: int) -> Response:
     while True:
         try:
-            cur_game = current_app.games[session_id]
+            data = await websocket.receive()
+            cur_game: Game = current_app.games[session_id]
             player_id = id(websocket._get_current_object())
+            player = cur_game.get(player_id)
+            action = PlayerAction.from_str(data)
+
+            if not player:
+                abort(403)
+
             logger.info(
                 f"Player {player_id} connected to session {session_id}"
             )
 
-            data = await websocket.receive()
-            action = PlayerAction.from_str(data)
-            current_game = StatusGetter(
-                session_id, SessionRepo(cur_game._players)
-            ).perform()
-            updated_player = Updater(
-                current_game.current_player,
+            response = Play(
+                cur_game,
+                player,
                 action,
-                data,
-                current_game.get_status(),
+                WebsocketResponder(),
+                SessionRepo(cur_game._players),
             ).perform()
-            update_player_in_list(
-                cur_game._players, current_game.current_player, updated_player
-            )
-            response = Responder(
-                action, current_game, WebsocketResponder(),
-            ).perform()
+
         except asyncio.CancelledError:
             logger.info(
                 f"Player {player_id} disconnected from session {session_id}"

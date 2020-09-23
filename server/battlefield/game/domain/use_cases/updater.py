@@ -8,7 +8,6 @@ class Updater:
 
     current_player: Player
     action: PlayerAction
-    data: str
     game_phase: GamePhase
 
     def perform(self) -> Player:

@@ -119,5 +119,11 @@ class Game:
     def remove(self, player: Player) -> None:
         self._players.remove(player)
 
+    def get(self, player_id: int) -> Optional[Player]:
+        return next(
+            (player for player in self._players if player.id_ == player_id),
+            None,
+        )
+
     def __len__(self) -> int:
         return len(self._players)
