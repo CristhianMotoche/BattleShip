@@ -7,8 +7,9 @@ from battlefield.game.domain.use_cases.responder import (
 )
 from battlefield.game.domain.use_cases.updater import Updater
 from battlefield.game.domain.use_cases.game_status_getter import (
-    GetterRepository,
     StatusGetter,
+    NotEnoughPlayers,
+    MoreThanExpected,
 )
 
 from ..entities import Game, Player, PlayerAction
@@ -20,23 +21,26 @@ class Play:
     _player: Player
     _action: PlayerAction
     _responder: ResponderClient
-    _getter: GetterRepository
 
     def perform(self) -> Any:
-        current_game = StatusGetter(
-            self._game.session_id, self._getter
-        ).perform()
-        updated_player = Updater(
-            current_game.current_player,
-            self._action,
-            current_game.get_status(),
-        ).perform()
-        update_player_in_list(
-            self._game._players, current_game.current_player, updated_player
-        )
-        return Responder(
-            self._action, current_game, self._responder,
-        ).perform()
+        try:
+            current_game = StatusGetter(self._game._players).perform()
+        except (NotEnoughPlayers, MoreThanExpected):
+            return self._responder.send_to(self._player, "Missing players")
+        else:
+            updated_player = Updater(
+                current_game.current_player,
+                self._action,
+                current_game.get_status(),
+            ).perform()
+            update_player_in_list(
+                self._game._players,
+                current_game.current_player,
+                updated_player,
+            )
+            return Responder(
+                self._action, current_game, self._responder,
+            ).perform()
 
 
 def update_player_in_list(

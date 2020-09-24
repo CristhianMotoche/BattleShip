@@ -1,8 +1,7 @@
 import asyncio
 import logging
 import sys
-from dataclasses import dataclass
-from typing import Awaitable, Any, Callable, List
+from typing import Awaitable, Any, Callable
 
 from quart import Response, abort, current_app, websocket
 from quart_openapi import PintBlueprint
@@ -10,9 +9,6 @@ from quart_openapi import PintBlueprint
 from battlefield.game.domain.entities import PlayerAction, Player, Game
 from battlefield.game.domain.use_cases.play import Play
 from battlefield.game.domain.use_cases.responder import ResponderClient
-from battlefield.game.domain.use_cases.game_status_getter import (
-    GetterRepository,
-)
 
 
 logger = logging.getLogger(__name__)
@@ -57,14 +53,6 @@ def collect_websocket(
     return wrapper
 
 
-@dataclass(frozen=True)
-class SessionRepo(GetterRepository):
-    players: List[Player]
-
-    def lookup_for_players(self, session_id: int) -> List[Player]:
-        return self.players
-
-
 @game.websocket("/ws/session/<int:session_id>")
 @collect_websocket
 async def ws(session_id: int) -> Response:
@@ -88,7 +76,6 @@ async def ws(session_id: int) -> Response:
                 player,
                 action,
                 WebsocketResponder(),
-                SessionRepo(cur_game._players),
             ).perform()
 
         except asyncio.CancelledError:
