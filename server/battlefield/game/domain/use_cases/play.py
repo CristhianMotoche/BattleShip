@@ -25,8 +25,10 @@ class Play:
     def perform(self) -> Any:
         try:
             current_game = StatusGetter(self._game._players).perform()
-        except (NotEnoughPlayers, MoreThanExpected):
+        except NotEnoughPlayers:
             return self._responder.send_to(self._player, "Missing players")
+        except MoreThanExpected:
+            return self._responder.send_to(self._player, "Too many players")
         else:
             updated_player = Updater(
                 current_game.current_player,

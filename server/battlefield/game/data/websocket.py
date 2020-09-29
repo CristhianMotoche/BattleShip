@@ -40,7 +40,7 @@ def collect_websocket(
             session_id, Game(session_id)
         )
 
-        if len(cur_game) > 2:
+        if len(cur_game) >= 2:
             abort(403)
 
         cur_game.append(player)
