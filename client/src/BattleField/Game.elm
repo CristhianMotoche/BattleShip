@@ -184,7 +184,9 @@ update msg model =
            headShip = Just pos
          }, WS.wsOut "Placing")
 
-    SendAttack pos -> (model, WS.wsOut <| posToStr pos)
+    SendAttack pos ->
+      ({ model | theirBoard = setShipHead pos model.theirBoard
+       }, WS.wsOut <| posToStr pos)
 
     SetShipTail pos ->
       case model.headShip of

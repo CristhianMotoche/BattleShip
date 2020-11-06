@@ -63,13 +63,12 @@ async def ws(session_id: int) -> Response:
             player_id = id(websocket._get_current_object())
             player = cur_game.get(player_id)
             action = PlayerAction.from_str(data)
+            logger.info(
+                f"Player {player_id} in session {session_id} action {data}"
+            )
 
             if not player:
                 abort(403)
-
-            logger.info(
-                f"Player {player_id} connected to session {session_id}"
-            )
 
             response = Play(
                 cur_game,
