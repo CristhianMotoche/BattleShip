@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 from unittest.mock import create_autospec
 
 from battlefield.game.domain.use_cases.play import Play
@@ -31,6 +31,7 @@ class PlayUnitTest(TestCase):
 
         mock_responder.send_to.assert_called_once_with(player, "Too many players")
 
+    @skip("NOT IMPLEMENTED YET")
     def test_perform_after_successfull_attack_changes_turn(
         self,
     ) -> None:
@@ -60,6 +61,7 @@ class PlayUnitTest(TestCase):
 
         assert game._turn == 0
 
+    @skip("NOT IMPLEMENTED YET")
     def test_perform_when_trying_to_attack_in_another_turn_sends_error_to_player(
         self,
     ) -> None:

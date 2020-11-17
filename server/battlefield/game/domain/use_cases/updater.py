@@ -5,7 +5,6 @@ from battlefield.game.domain.entities import Player, PlayerAction, GamePhase
 
 @dataclass
 class Updater:
-
     current_player: Player
     action: PlayerAction
     game_phase: GamePhase

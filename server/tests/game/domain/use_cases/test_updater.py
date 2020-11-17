@@ -15,7 +15,7 @@ class UpdaterUnitTest(TestCase):
         expected = PlayerPhase.PLACING
 
         updated_player = Updater(
-            p1, PlayerAction.PLACING, "", GamePhase.PLACING
+            p1, PlayerAction.PLACING, GamePhase.PLACING
         ).perform()
 
         assert updated_player.status == expected
@@ -25,7 +25,7 @@ class UpdaterUnitTest(TestCase):
         expected = PlayerPhase.READY
 
         updated_player = Updater(
-            p1, PlayerAction.READY, "", GamePhase.PLACING
+            p1, PlayerAction.READY, GamePhase.PLACING
         ).perform()
 
         assert updated_player.status == expected
@@ -37,7 +37,7 @@ class UpdaterUnitTest(TestCase):
         expected = PlayerPhase.PLAYING
 
         updated_player = Updater(
-            p1, PlayerAction.PLAYING, "", GamePhase.READY
+            p1, PlayerAction.PLAYING, GamePhase.READY
         ).perform()
 
         assert updated_player.status == expected
@@ -49,7 +49,7 @@ class UpdaterUnitTest(TestCase):
         expected = PlayerPhase.ATTACKING
 
         updated_player = Updater(
-            p1, PlayerAction.ATTACKING, "", GamePhase.PLAYING
+            p1, PlayerAction.ATTACKING, GamePhase.PLAYING
         ).perform()
 
         assert updated_player.status == expected
