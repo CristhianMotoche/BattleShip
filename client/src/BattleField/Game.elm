@@ -307,10 +307,20 @@ view model =
               in boardView foo model.ourBoard
             ]
     , H.div [ HA.class "them" ]
-            [ boardView (Just SendAttack) model.theirBoard ]
+            [ boardView (attackAction model.ourPhase) model.theirBoard ]
     , H.button [ HE.onClick (WSOut "Hello!") ]
                [ H.text "Send hello!" ]
     ]
+
+
+type alias Action = Pos -> Msg
+
+attackAction : Phase -> Maybe Action
+attackAction p =
+  case p of
+    Playing -> Just SendAttack
+    _ -> Nothing
+
 
 alphaIndexView : List (H.Html msg)
 alphaIndexView =
@@ -327,7 +337,7 @@ numsIndexView =
      List.map singleAlphaView <| List.range 1 size
 
 
-boardView : Maybe (Pos -> Msg) -> Board -> H.Html Msg
+boardView : Maybe Action -> Board -> H.Html Msg
 boardView action b =
   H.div [ HA.class "board" ]
     <| List.append (letterView "X" :: List.map numView nums)
@@ -339,11 +349,11 @@ letterView letter = H.div [ HA.class "letter" ][ H.text letter ]
 numView : Int -> H.Html ms
 numView idx = H.div [ HA.class "num" ][ H.text <| String.fromInt idx ]
 
-alphaSquareView : Maybe (Pos -> Msg) -> (String, List Square) -> List (H.Html Msg)
+alphaSquareView : Maybe Action -> (String, List Square) -> List (H.Html Msg)
 alphaSquareView action (letter, squares) =
   letterView letter :: List.map (squareView action) squares
 
-squareView : Maybe (Pos -> Msg) -> Square -> H.Html Msg
+squareView : Maybe Action -> Square -> H.Html Msg
 squareView action {pos, enabled} =
   let
       (c, i) = pos
