@@ -5,10 +5,8 @@ from battlefield.game.domain.entities import Player, PlayerAction, GamePhase
 
 @dataclass
 class Updater:
-
     current_player: Player
     action: PlayerAction
-    data: str
     game_phase: GamePhase
 
     def perform(self) -> Player:

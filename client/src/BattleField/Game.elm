@@ -84,7 +84,7 @@ posToStr (str, int) = str ++ String.fromInt int
 
 type alias Square =
   { pos : Pos
-  , usedByShip : Bool
+  , enabled : Bool
   }
 type alias Cans =
   { canSetTail : Bool
@@ -105,7 +105,7 @@ initBoard =
   let
       toSquare pos =
         { pos = pos
-        , usedByShip = False
+        , enabled = False
         }
   in
     List.map
@@ -184,7 +184,9 @@ update msg model =
            headShip = Just pos
          }, WS.wsOut "Placing")
 
-    SendAttack pos -> (model, WS.wsOut <| posToStr pos)
+    SendAttack pos ->
+      ({ model | theirBoard = setShipHead pos model.theirBoard
+       }, WS.wsOut <| posToStr pos)
 
     SetShipTail pos ->
       case model.headShip of
@@ -233,7 +235,7 @@ setShipHead pos board =
       List.indexedMap
         (\_ square ->
             if square.pos == pos
-            then { square | usedByShip = True }
+            then { square | enabled = True }
             else square
         ) squareList
     ) board
@@ -245,7 +247,7 @@ setShipTail positions board =
       List.indexedMap
         (\_ square ->
             if memberInLine square.pos positions
-            then { square | usedByShip = True }
+            then { square | enabled = True }
             else square
         ) squareList
     ) board
@@ -296,20 +298,29 @@ view model =
       Nothing -> H.div [] []
       Just err -> H.div [ HA.class "error" ] [ H.text <| placingErrorToText err ]
     , H.div [ HA.class "us" ]
-            [ boardView
-              { canSetHead = model.headShip == Nothing
-              , canSetTail = model.tailShip == Nothing
-              }
-              model.ourBoard
+            [
+              let
+                foo = case (model.headShip == Nothing, model.tailShip == Nothing) of
+                  (True, _) -> Just SetShipHead
+                  (_, True) -> Just SetShipTail
+                  (_, _) -> Nothing
+              in boardView foo model.ourBoard
             ]
     , H.div [ HA.class "them" ]
-            [ boardView
-              {canSetHead = False, canSetTail = False}
-              model.theirBoard
-            ]
+            [ boardView (attackAction model.ourPhase) model.theirBoard ]
     , H.button [ HE.onClick (WSOut "Hello!") ]
                [ H.text "Send hello!" ]
     ]
+
+
+type alias Action = Pos -> Msg
+
+attackAction : Phase -> Maybe Action
+attackAction p =
+  case p of
+    Playing -> Just SendAttack
+    _ -> Nothing
+
 
 alphaIndexView : List (H.Html msg)
 alphaIndexView =
@@ -326,11 +337,11 @@ numsIndexView =
      List.map singleAlphaView <| List.range 1 size
 
 
-boardView : Cans -> Board -> H.Html Msg
-boardView cans b =
+boardView : Maybe Action -> Board -> H.Html Msg
+boardView action b =
   H.div [ HA.class "board" ]
     <| List.append (letterView "X" :: List.map numView nums)
-    <| List.concatMap (alphaSquareView cans) (List.map2 Tuple.pair alphas b)
+    <| List.concatMap (alphaSquareView action) (List.map2 Tuple.pair alphas b)
 
 letterView : String -> H.Html msg
 letterView letter = H.div [ HA.class "letter" ][ H.text letter ]
@@ -338,22 +349,21 @@ letterView letter = H.div [ HA.class "letter" ][ H.text letter ]
 numView : Int -> H.Html ms
 numView idx = H.div [ HA.class "num" ][ H.text <| String.fromInt idx ]
 
-alphaSquareView : Cans -> (String, List Square) -> List (H.Html Msg)
-alphaSquareView cans (letter, squares) =
-  letterView letter :: List.map (squareView cans) squares
+alphaSquareView : Maybe Action -> (String, List Square) -> List (H.Html Msg)
+alphaSquareView action (letter, squares) =
+  letterView letter :: List.map (squareView action) squares
 
-squareView : Cans -> Square -> H.Html Msg
-squareView {canSetHead, canSetTail} {pos, usedByShip} =
+squareView : Maybe Action -> Square -> H.Html Msg
+squareView action {pos, enabled} =
   let
       (c, i) = pos
       event =
-        case (canSetHead, canSetTail) of
-          (True, _) -> [HE.onClick <| SetShipHead pos]
-          (_, True) -> [HE.onClick <| SetShipTail pos]
-          (_, _) -> []
+        case action of
+          Just action_ -> [HE.onClick <| action_ pos]
+          Nothing -> []
       attrs =
         List.append [ HA.class "square"]
-        <| if usedByShip
+        <| if enabled
            then [HA.class "used-by-ship"]
            else event
   in
